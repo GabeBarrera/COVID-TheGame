@@ -1,0 +1,876 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#F1F3F5;height:100%;}
+*{box-sizing:border-box;}
+a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
+::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:#D4DAE0;border-radius:4px;}
+@keyframes ripple{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes fadeUp{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 2px rgba(14,159,138,.6)}50%{box-shadow:0 0 0 7px rgba(14,159,138,0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</helmet>
+<div style="width:100vw;height:100vh;display:flex;flex-direction:column;font-family:'IBM Plex Sans',sans-serif;color:#14181D;overflow:hidden;background:#F1F3F5;">
+
+  <!-- ============ SETUP ============ -->
+  <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;">
+      <div style="width:640px;max-width:94vw;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:10px;padding:36px 40px;box-shadow:0 8px 30px rgba(20,24,29,.06);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR Â· v2.6</div>
+        <h1 style="margin:8px 0 4px;font-size:34px;font-weight:700;letter-spacing:-0.5px;">COVID: The Game</h1>
+        <div style="font-size:13.5px;color:#5C6670;margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2â€“4 officials. Any resemblance to actual events is entirely the point.</div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#5C6670;margin-bottom:8px;">THREAT LEVEL</div>
+        <div style="display:flex;gap:8px;margin-bottom:26px;">
+          <sc-for list="{{ epiOptions }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.onPick }}" style="{{ o.style }}">
+              <div style="font-size:16px;font-weight:700;">{{ o.n }}</div>
+              <div style="font-size:11px;opacity:.75;">{{ o.label }}</div>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#5C6670;margin-bottom:8px;">RESPONSE TEAM</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <sc-for list="{{ setupPlayers }}" as="p" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:5px;border:1px solid #E4E8EC;border-radius:8px;padding:12px 14px;background:#FAFBFC;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div style="{{ p.badgeStyle }}">{{ p.num }}</div>
+                <input value="{{ p.name }}" onChange="{{ p.onName }}" style="flex:1;border:1px solid #D4DAE0;border-radius:6px;padding:7px 10px;font-size:13.5px;font-family:'IBM Plex Sans',sans-serif;background:#fff;outline:none;" />
+                <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="border:1px solid #D4DAE0;border-radius:6px;padding:7px 8px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;background:#fff;">
+                  <option value="nurse">Frontline Nurse</option>
+                  <option value="vaccinologist">Vaccinologist</option>
+                  <option value="analyst">Data Analyst</option>
+                  <option value="logistics">Logistics Chief</option>
+                  <option value="engineer">Site Engineer</option>
+                  <option value="quarantine">Quarantine Officer</option>
+                </select>
+                <sc-if value="{{ p.canRemove }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:#98A2AD;cursor:pointer;font-size:16px;padding:4px;" title="Remove">âœ•</button>
+                </sc-if>
+              </div>
+              <div style="font-size:12px;color:#5C6670;font-style:italic;padding-left:38px;">{{ p.blurb }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ canAdd }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ addPlayer }}" style="border:1px dashed #C3CBD3;background:none;border-radius:8px;padding:9px;width:100%;color:#5C6670;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;color:#0E9F8A;">+ Add official</button>
+        </sc-if>
+
+        <button onClick="{{ startGame }}" style="margin-top:24px;width:100%;background:#0E9F8A;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#0B7F6E;">Convene the task force</button>
+        <div style="font-size:11.5px;color:#98A2AD;text-align:center;margin-top:10px;">Win: vaccinate all four strains. Lose: 8 outbreaks, an exhausted cube supply, or an empty briefing deck.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ GAME ============ -->
+  <sc-if value="{{ isGame }}" hint-placeholder-val="{{ false }}">
+    <!-- Top bar -->
+    <div data-screen-label="Top bar" style="height:58px;background:#FFFFFF;border-bottom:1px solid #E4E8EC;display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.5px;">COVID: THE GAME</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1.5px;">TURN {{ turn }}</div>
+      </div>
+      <div style="width:1px;height:32px;background:#E4E8EC;"></div>
+      <div style="display:flex;gap:8px;">
+        <sc-for list="{{ strains }}" as="s" hint-placeholder-count="4">
+          <div style="{{ s.chipStyle }}" title="{{ s.title }}">
+            <div style="{{ s.dotStyle }}"></div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:1px;">{{ s.name }}</div>
+              <div style="font-size:10px;color:{{ s.statusColor }};font-weight:600;">{{ s.status }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1;"></div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:3px;">INFECTION RATE</div>
+        <div style="display:flex;gap:3px;">
+          <sc-for list="{{ rateCells }}" as="r" hint-placeholder-count="7">
+            <div style="{{ r.style }}">{{ r.v }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:2px;">OUTBREAKS</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;color:{{ outbreakColor }};">{{ outbreaks }}<span style="font-size:12px;color:#98A2AD;">/8</span></div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:2px;">BRIEFING DECK</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;">{{ deckCount }}</div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div style="flex:1;display:flex;min-height:0;">
+      <!-- Board -->
+      <div data-screen-label="World board" style="flex:1;position:relative;background:#DDE6EB;overflow:hidden;">
+        <div ref="{{ mapRef }}" style="position:absolute;inset:0;z-index:1;"></div>
+        <div style="position:absolute;inset:0;z-index:2;pointer-events:none;">
+          <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible;">
+            <sc-for list="{{ lines }}" as="l" hint-placeholder-count="10">
+              <line x1="{{ l.x1 }}" y1="{{ l.y1 }}" x2="{{ l.x2 }}" y2="{{ l.y2 }}" stroke="#5C7385" stroke-width="1" stroke-dasharray="4 4" opacity="0.55"></line>
+            </sc-for>
+          </svg>
+          <sc-for list="{{ fx }}" as="f" hint-placeholder-count="0">
+            <div style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;width:{{ f.size }}px;height:{{ f.size }}px;border-radius:50%;border:3px solid {{ f.hex }};pointer-events:none;animation:ripple 1.3s ease-out forwards;z-index:5;"></div>
+          </sc-for>
+          <sc-for list="{{ cityNodes }}" as="c" hint-placeholder-count="12">
+            <div onClick="{{ c.onClick }}" title="{{ c.name }}" style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;width:0;overflow:visible;pointer-events:auto;">
+              <div style="display:flex;gap:2px;height:13px;margin-bottom:2px;">
+                <sc-for list="{{ c.cubes }}" as="q" hint-placeholder-count="0">
+                  <div style="background:{{ q.hex }};color:#fff;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;border-radius:3px;padding:0 3px;line-height:13px;animation:popIn .35s ease-out;box-shadow:0 1px 3px rgba(20,24,29,.25);">{{ q.n }}</div>
+                </sc-for>
+              </div>
+              <div style="{{ c.dotStyle }}"></div>
+              <sc-if value="{{ c.showLabel }}" hint-placeholder-val="{{ true }}">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#5C6670;white-space:nowrap;margin-top:2px;background:rgba(247,248,249,.8);padding:0 2px;border-radius:2px;">{{ c.label }}</div>
+              </sc-if>
+              <div style="display:flex;gap:2px;height:11px;margin-top:1px;">
+                <sc-for list="{{ c.pawns }}" as="w" hint-placeholder-count="0">
+                  <div title="{{ w.name }}" style="width:11px;height:11px;border-radius:50%;background:{{ w.hex }};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(20,24,29,.35);color:#fff;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">{{ w.num }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- infect banner -->
+        <sc-if value="{{ showInfect }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#14181D;color:#fff;border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:12px;z-index:40;box-shadow:0 8px 24px rgba(20,24,29,.3);animation:fadeUp .3s ease-out;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;animation:blink 1.2s infinite;">INFECTION STEP {{ infectDone }}/{{ infectTotal }}</div>
+            <div style="display:flex;gap:6px;">
+              <sc-for list="{{ infectCards }}" as="ic" hint-placeholder-count="0">
+                <div style="background:{{ ic.hex }};border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;animation:popIn .35s ease-out;">{{ ic.name }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- targeting banner -->
+        <sc-if value="{{ showTarget }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#0E9F8A;color:#fff;border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:14px;z-index:40;box-shadow:0 8px 24px rgba(14,159,138,.35);animation:fadeUp .3s ease-out;">
+            <div style="font-size:13px;font-weight:600;">{{ targetText }}</div>
+            <button onClick="{{ onCancelTarget }}" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
+          </div>
+        </sc-if>
+
+        <!-- toast -->
+        <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#14181D;color:#fff;border-radius:7px;padding:9px 16px;font-size:12.5px;z-index:40;animation:fadeUp .25s ease-out;">{{ toastText }}</div>
+        </sc-if>
+      </div>
+
+      <!-- Sidebar -->
+      <div data-screen-label="Control panel" style="width:390px;flex-shrink:0;background:#FFFFFF;border-left:1px solid #E4E8EC;display:flex;flex-direction:column;min-height:0;">
+        <!-- current player -->
+        <div style="padding:14px 16px;border-bottom:1px solid #E4E8EC;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="{{ curBadgeStyle }}">{{ curNum }}</div>
+            <div style="flex:1;">
+              <div style="font-size:16px;font-weight:700;">{{ curName }}</div>
+              <div style="font-size:11.5px;font-weight:600;color:{{ curRoleHex }};">{{ curRoleName }} Â· in {{ curCity }}</div>
+            </div>
+            <div style="display:flex;gap:4px;" title="Actions remaining">
+              <sc-for list="{{ actionPips }}" as="a" hint-placeholder-count="4">
+                <div style="{{ a.style }}"></div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ showPawnSel }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:9px;display:flex;align-items:center;gap:8px;font-size:12px;color:#5C6670;">
+              Moving pawn:
+              <select value="{{ actPawnValue }}" onChange="{{ onPawnSel }}" style="border:1px solid #D4DAE0;border-radius:5px;padding:4px 6px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;background:#fff;">
+                <sc-for list="{{ pawnOptions }}" as="po" hint-placeholder-count="2">
+                  <option value="{{ po.value }}">{{ po.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- actions -->
+        <div style="padding:12px 16px;border-bottom:1px solid #E4E8EC;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">ACTIONS â€” CLICK A CITY TO MOVE</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <sc-for list="{{ treatBtns }}" as="t" hint-placeholder-count="0">
+              <button onClick="{{ t.onClick }}" disabled="{{ t.disabled }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+            <button onClick="{{ onBuild }}" disabled="{{ buildDisabled }}" title="{{ buildWhy }}" style="{{ buildStyle }}">Build lab</button>
+            <button onClick="{{ onCureClick }}" disabled="{{ cureDisabled }}" title="{{ cureWhy }}" style="{{ cureStyle }}">Develop vaccine</button>
+            <button onClick="{{ onShareClick }}" disabled="{{ shareDisabled }}" title="{{ shareWhy }}" style="{{ shareStyle }}">Share file</button>
+            <button onClick="{{ onPass }}" disabled="{{ passDisabled }}" style="{{ passStyle }}">End turn</button>
+          </div>
+        </div>
+
+        <!-- hand -->
+        <div style="padding:12px 16px;border-bottom:1px solid #E4E8EC;max-height:34%;overflow:auto;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">HAND ({{ handCount }}/7)</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <sc-for list="{{ hand }}" as="h" hint-placeholder-count="3">
+              <div style="{{ h.style }}">
+                <div style="width:4px;align-self:stretch;border-radius:2px;background:{{ h.hex }};"></div>
+                <div style="flex:1;font-size:12.5px;font-weight:600;">{{ h.label }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#98A2AD;letter-spacing:.5px;">{{ h.tag }}</div>
+                <sc-if value="{{ h.playable }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ h.onPlay }}" style="background:#0E9F8A;color:#fff;border:none;border-radius:4px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">PLAY</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+            <sc-for list="{{ others }}" as="ot" hint-placeholder-count="1">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:#5C6670;">
+                <div style="{{ ot.badgeStyle }}">{{ ot.num }}</div>
+                <span style="font-weight:600;color:#14181D;">{{ ot.name }}</span>
+                <sc-for list="{{ ot.cards }}" as="oc" hint-placeholder-count="0">
+                  <span style="border:1px solid #E4E8EC;border-left:3px solid {{ oc.hex }};border-radius:3px;padding:1px 5px;font-size:10.5px;">{{ oc.label }}</span>
+                </sc-for>
+                <sc-for list="{{ ot.events }}" as="oe" hint-placeholder-count="0">
+                  <button onClick="{{ oe.onPlay }}" style="border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">{{ oe.label }} â–¸</button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- log -->
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;padding:10px 16px 6px;">SITUATION LOG</div>
+          <div style="flex:1;overflow:auto;padding:0 16px 14px;display:flex;flex-direction:column;gap:5px;">
+            <sc-for list="{{ logEntries }}" as="e" hint-placeholder-count="6">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.45;color:{{ e.color }};border-left:2px solid {{ e.bar }};padding-left:8px;">{{ e.text }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== overlays ===== -->
+    <sc-if value="{{ showMove }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancel }}">
+        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:380px;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Travel to {{ moveDestName }}</div>
+          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">Costs 1 action.</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <sc-for list="{{ moveOpts }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.onClick }}" style="text-align:left;border:1px solid #D4DAE0;background:#FAFBFC;border-radius:7px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">{{ m.label }}<span style="display:block;font-size:11px;color:#98A2AD;font-weight:400;">{{ m.sub }}</span></button>
+            </sc-for>
+          </div>
+          <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:#98A2AD;font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showPicker }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancelSoft }}">
+        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:430px;max-height:80vh;overflow:auto;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">{{ pickerTitle }}</div>
+          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">{{ pickerSub }}</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <sc-for list="{{ pickerItems }}" as="pi" hint-placeholder-count="3">
+              <button onClick="{{ pi.onClick }}" style="display:flex;align-items:center;gap:9px;text-align:left;border:1px solid #D4DAE0;background:#FAFBFC;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
+                <div style="width:9px;height:9px;border-radius:2px;background:{{ pi.hex }};flex-shrink:0;"></div>
+                <span style="flex:1;">{{ pi.label }}</span>
+                <span style="font-size:11px;color:#98A2AD;font-weight:400;">{{ pi.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ pickerCancellable }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:#98A2AD;font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showModel }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:420px;animation:fadeUp .25s ease-out;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Predictive Model</div>
+          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <sc-for list="{{ modelCards }}" as="mc" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:9px;border:1px solid #E4E8EC;border-radius:6px;padding:7px 10px;background:#FAFBFC;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;width:16px;">{{ mc.pos }}</div>
+                <div style="width:9px;height:9px;border-radius:2px;background:{{ mc.hex }};"></div>
+                <div style="flex:1;font-size:13px;font-weight:600;">{{ mc.name }}</div>
+                <button onClick="{{ mc.up }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">â–²</button>
+                <button onClick="{{ mc.down }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">â–¼</button>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ onModelConfirm }}" style="margin-top:14px;width:100%;background:#0E9F8A;color:#fff;border:none;border-radius:7px;padding:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Commit to the model</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showDraw }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.55);z-index:110;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:26px 30px;width:440px;text-align:center;animation:fadeUp .25s ease-out;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#98A2AD;margin-bottom:14px;">END OF TURN â€” BRIEFING CARD {{ drawIdxLabel }} OF 2</div>
+          <sc-if value="{{ drawHidden }}" hint-placeholder-val="{{ true }}">
+            <div style="width:170px;height:110px;margin:0 auto 18px;border-radius:10px;background:repeating-linear-gradient(45deg,#E9EDF0,#E9EDF0 8px,#F4F6F8 8px,#F4F6F8 16px);border:1px solid #D4DAE0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;letter-spacing:2px;">CLASSIFIED</div>
+            <button onClick="{{ onReveal }}" style="background:#14181D;color:#fff;border:none;border-radius:7px;padding:12px 30px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reveal</button>
+          </sc-if>
+          <sc-if value="{{ drawShown }}" hint-placeholder-val="{{ false }}">
+            <div style="width:200px;margin:0 auto 16px;border-radius:10px;border:1px solid #D4DAE0;overflow:hidden;animation:popIn .4s ease-out;box-shadow:0 10px 30px rgba(20,24,29,.15);">
+              <div style="background:{{ drawHex }};color:#fff;padding:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;font-weight:700;">{{ drawKind }}</div>
+              <div style="padding:16px 12px;font-size:17px;font-weight:700;">{{ drawTitle }}</div>
+            </div>
+            <div style="font-size:12.5px;color:#5C6670;margin-bottom:16px;line-height:1.5;white-space:pre-line;">{{ drawDesc }}</div>
+            <sc-if value="{{ epidemicPending }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
+                <sc-for list="{{ bubbleOffer }}" as="bo" hint-placeholder-count="0">
+                  <button onClick="{{ bo.onClick }}" style="border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:7px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">{{ bo.label }}</button>
+                </sc-for>
+                <button onClick="{{ onIntensify }}" style="background:#B42318;color:#fff;border:none;border-radius:7px;padding:12px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reshuffle reports &amp; continue</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ drawContinueVisible }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ onDrawContinue }}" style="background:#0E9F8A;color:#fff;border:none;border-radius:7px;padding:12px 30px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Continue</button>
+            </sc-if>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showEnd }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.7);z-index:200;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:40px 44px;width:480px;text-align:center;animation:fadeUp .35s ease-out;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:3px;color:{{ endHue }};font-weight:700;margin-bottom:10px;">{{ endKicker }}</div>
+          <div style="font-size:28px;font-weight:700;margin-bottom:12px;">{{ endTitle }}</div>
+          <div style="font-size:14px;color:#5C6670;line-height:1.6;margin-bottom:24px;">{{ endBody }}</div>
+          <button onClick="{{ onRestart }}" style="background:#14181D;color:#fff;border:none;border-radius:8px;padding:13px 34px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reconvene task force</button>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;infectSpeedMs&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 950, &quot;min&quot;: 300, &quot;max&quot;: 2000, &quot;step&quot;: 50, &quot;unit&quot;: &quot;ms&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Gameplay&quot;}, &quot;showOtherHands&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Interface&quot;}, &quot;cityLabels&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Interface&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ready: false, screen: 'setup',
+    setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
+    g: null,
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0 },
+  };
+
+  componentDidMount() {
+    import('./engine.js').then(E => { this.E = E; this.setState({ ready: true }); });
+  }
+  componentWillUnmount() {
+    clearInterval(this._it); clearTimeout(this._toastT); clearTimeout(this._fxT);
+    if (this._ro) this._ro.disconnect();
+    if (this.map) { this.map.remove(); this.map = null; }
+  }
+
+  mapRef = (el) => {
+    if (!el) {
+      if (this._ro) { this._ro.disconnect(); this._ro = null; }
+      if (this.map) { this.map.remove(); this.map = null; }
+      this._mapEl = null;
+      return;
+    }
+    if (this._mapEl === el && this.map) return;
+    this._mapEl = el;
+    this.initMap();
+  };
+
+  initMap() {
+    if (this.map || !this._mapEl) return;
+    if (!window.L) { setTimeout(() => this.initMap(), 200); return; }
+    const map = window.L.map(this._mapEl, {
+      zoomControl: true, zoomSnap: 0.25, minZoom: 1.25, maxZoom: 8,
+      worldCopyJump: false, zoomAnimation: false,
+      maxBounds: [[-75, -200], [80, 220]], maxBoundsViscosity: 0.8,
+    });
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 10,
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    }).addTo(map);
+    map.fitBounds([[-42, -132], [62, 160]]);
+    const onView = () => {
+      if (this._raf) return;
+      this._raf = requestAnimationFrame(() => { this._raf = null; this.forceUpdate(); });
+    };
+    map.on('move zoom viewreset resize', onView);
+    this._ro = new ResizeObserver(() => map.invalidateSize());
+    this._ro.observe(this._mapEl);
+    this.map = map;
+    this.forceUpdate();
+  }
+
+  mut(fn) {
+    const g = this.state.g;
+    fn(g);
+    const ui = this.state.ui;
+    if (g.current !== ui.lastCurrent) { ui.lastCurrent = g.current; ui.actPawn = g.current; }
+    if (g.phase === 'infect') this.scheduleInfect();
+    this.scheduleFxCleanup(g);
+    this.setState({ g, ui });
+  }
+
+  scheduleInfect() {
+    if (this._it) return;
+    this._it = setInterval(() => {
+      const { g, ui } = this.state;
+      if (!g || g.phase !== 'infect' || !g.pending) { clearInterval(this._it); this._it = null; return; }
+      this.E.infectStep(g);
+      this.scheduleFxCleanup(g);
+      if (g.phase !== 'infect') { clearInterval(this._it); this._it = null; }
+      this.setState({ g });
+    }, this.infectMs());
+  }
+  infectMs() { return this.props.infectSpeedMs ?? 950; }
+
+  scheduleFxCleanup(g) {
+    if (!g.effects.length || this._fxT) return;
+    this._fxT = setTimeout(() => {
+      this._fxT = null;
+      const gg = this.state.g;
+      if (gg) { gg.effects = []; this.setState({ g: gg }); }
+    }, 1500);
+  }
+
+  toast(msg) {
+    this.state.ui.toast = msg;
+    this.setState({ ui: this.state.ui });
+    clearTimeout(this._toastT);
+    this._toastT = setTimeout(() => { this.state.ui.toast = null; this.setState({ ui: this.state.ui }); }, 2400);
+  }
+
+  setUi(patch) { Object.assign(this.state.ui, patch); this.setState({ ui: this.state.ui }); }
+
+  // ---------- setup ----------
+  startGame = () => {
+    const E = this.E;
+    const s = this.state.setup;
+    const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0 } });
+  };
+
+  // ---------- board ----------
+  onCity(id) {
+    const { g, ui } = this.state;
+    const E = this.E;
+    if (!g || g.phase === 'won' || g.phase === 'lost') return;
+    if (ui.mode) {
+      const m = ui.mode;
+      if (m.type === 'funding') {
+        if (g.stations.includes(id)) return this.toast('There is already a lab there.');
+        if (g.stations.length >= E.MAX_STATIONS) return this.toast('All 6 labs are built.');
+        this.setUi({ mode: null });
+        this.mut(gg => E.eventFunding(gg, m.player, id));
+      } else if (m.type === 'jet') {
+        this.setUi({ mode: null });
+        this.mut(gg => E.eventJet(gg, m.player, m.pawn, id));
+      }
+      return;
+    }
+    if (g.phase !== 'actions') return;
+    const pawnIdx = g.players[g.current].role === 'logistics' ? ui.actPawn : g.current;
+    const opts = E.moveOptions(g, pawnIdx, id);
+    if (!opts.length) return this.toast(`No legal route to ${E.CITIES[id].name} right now.`);
+    this.setUi({ modal: { type: 'move', dest: id, pawn: pawnIdx, opts } });
+  }
+
+  doMoveOpt(opt) {
+    const { ui, g } = this.state;
+    const m = ui.modal;
+    const E = this.E;
+    if (opt.how === 'engineerFly') {
+      const cards = g.players[g.current].hand.filter(c => c.type === 'city');
+      this.setUi({
+        modal: {
+          type: 'picker', title: 'Engineer dispatch', sub: `Discard any city card to fly to ${E.CITIES[m.dest].name}.`,
+          items: cards.map(c => ({
+            hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name, sub: E.STRAINS[c.color].name,
+            onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt, c.uid)); },
+          })),
+        },
+      });
+      return;
+    }
+    this.setUi({ modal: null });
+    this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt));
+  }
+
+  // ---------- actions ----------
+  onBuild = () => this.mut(g => this.E.doBuild(g));
+  onCureClick = () => {
+    const E = this.E, g = this.state.g;
+    const chk = E.canCure(g);
+    if (!chk.ok) return;
+    const p = g.players[g.current];
+    const cards = p.hand.filter(c => c.type === 'city' && c.color === chk.color).slice(0, chk.need);
+    this.setUi({
+      modal: {
+        type: 'picker', title: `Develop the ${E.STRAINS[chk.color].name} vaccine`,
+        sub: `Turn in ${chk.need} matching samples. This cannot be undone (science rarely can).`,
+        items: [{
+          hex: E.STRAINS[chk.color].hex, label: `Confirm â€” submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
+          onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doCure(gg, chk.color, cards.map(c => c.uid))); },
+        }],
+      },
+    });
+  };
+  onShareClick = () => {
+    const E = this.E, g = this.state.g;
+    const opts = E.shareOptions(g);
+    if (!opts.length) return;
+    this.setUi({
+      modal: {
+        type: 'picker', title: 'Share knowledge', sub: 'Transfer a city file between officials in the same city. Costs 1 action.',
+        items: opts.map(o => ({
+          hex: E.STRAINS[o.color].hex, label: o.label, sub: E.STRAINS[o.color].name,
+          onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doShare(gg, o)); },
+        })),
+      },
+    });
+  };
+  onPass = () => this.mut(g => this.E.doPass(g));
+
+  // ---------- events ----------
+  playEventFrom(playerIdx, ev) {
+    const E = this.E, g = this.state.g;
+    if (ev === 'lockdown') return this.mut(gg => E.eventLockdown(gg, playerIdx));
+    if (ev === 'funding') {
+      if (g.stations.length >= E.MAX_STATIONS) return this.toast('All 6 labs are built.');
+      return this.setUi({ mode: { type: 'funding', player: playerIdx }, modal: null });
+    }
+    if (ev === 'jet') {
+      return this.setUi({
+        modal: {
+          type: 'picker', title: 'Charter Jet', sub: 'Who boards the jet?',
+          items: g.players.map(p => ({
+            hex: E.ROLES[p.role].hex, label: p.name, sub: E.CITIES[p.city].name,
+            onClick: () => this.setUi({ modal: null, mode: { type: 'jet', player: playerIdx, pawn: p.i } }),
+          })),
+        },
+      });
+    }
+    if (ev === 'model') {
+      const top = g.infectionDeck.slice(-6).reverse(); // next-drawn first
+      return this.setUi({ modal: { type: 'model', player: playerIdx, order: top.map(c => c.uid) } });
+    }
+    if (ev === 'bubble') {
+      if (!g.infectionDiscard.length) return this.toast('The infection discard pile is empty.');
+      return this.setUi({
+        modal: {
+          type: 'picker', title: 'Contact Bubble', sub: 'Remove one city from the infection discard pile, permanently.',
+          items: g.infectionDiscard.map(c => ({
+            hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name, sub: E.STRAINS[c.color].name,
+            onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.eventBubble(gg, playerIdx, c.uid)); },
+          })),
+        },
+      });
+    }
+  }
+
+  // ---------- draw phase ----------
+  onReveal = () => {
+    const g = this.state.g;
+    const card = g.pending.cards[g.pending.idx];
+    this.setUi({ drawShown: card });
+    this.mut(gg => this.E.resolveDrawnCard(gg));
+  };
+  onDrawContinue = () => {
+    this.setUi({ drawShown: null });
+    const g = this.state.g;
+    if (g.pending?.type === 'draw' && g.pending.finished) this.mut(gg => this.E.finishDraw(gg));
+  };
+  onIntensify = () => {
+    this.setUi({ drawShown: null });
+    this.mut(g => {
+      this.E.intensify(g);
+      if (g.pending?.type === 'draw' && g.pending.finished) this.E.finishDraw(g);
+    });
+  };
+
+  cancelModal = () => this.setUi({ modal: null });
+  stop = (e) => e.stopPropagation();
+
+  onRestart = () => this.setState({ screen: 'setup', g: null });
+
+  // =====================================================================
+  renderVals() {
+    const E = this.E;
+    const { ready, screen, setup, g, ui } = this.state;
+    const v = {
+      isSetup: ready && screen === 'setup',
+      isGame: ready && screen === 'game' && !!g,
+      stop: this.stop, onCancel: this.cancelModal, onCancelSoft: this.cancelModal,
+      addPlayer: () => { setup.players.push({ name: `Official ${setup.players.length + 1}`, role: ['analyst', 'logistics', 'engineer', 'quarantine'][setup.players.length % 4] }); this.setState({ setup }); },
+      canAdd: setup.players.length < 4,
+      startGame: this.startGame,
+      onRestart: this.onRestart,
+      onReveal: this.onReveal, onDrawContinue: this.onDrawContinue, onIntensify: this.onIntensify,
+      onBuild: this.onBuild, onCureClick: this.onCureClick, onShareClick: this.onShareClick, onPass: this.onPass,
+      onModelConfirm: () => {},
+      onCancelTarget: () => this.setUi({ mode: null }),
+      onPawnSel: (e) => this.setUi({ actPawn: +e.target.value }),
+    };
+    if (!ready) return v;
+
+    // ----- setup vals -----
+    const diffLabels = { 4: 'Advisory', 5: 'Emergency', 6: 'Full panic' };
+    v.epiOptions = [4, 5, 6].map(n => ({
+      n, label: diffLabels[n],
+      style: `flex:1;border-radius:8px;padding:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;text-align:center;${setup.epidemics === n ? 'border:2px solid #0E9F8A;background:#F0FAF8;color:#0B7F6E;' : 'border:1px solid #D4DAE0;background:#FAFBFC;color:#5C6670;'}`,
+      onPick: () => { setup.epidemics = n; this.setState({ setup }); },
+    }));
+    v.setupPlayers = setup.players.map((p, i) => ({
+      num: i + 1, name: p.name, role: p.role,
+      badgeStyle: `width:26px;height:26px;border-radius:50%;background:${E.ROLES[p.role].hex};color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'IBM Plex Mono',monospace;`,
+      blurb: E.ROLES[p.role].blurb,
+      canRemove: setup.players.length > 2,
+      onName: (e) => { p.name = e.target.value; this.setState({ setup }); },
+      onRole: (e) => { p.role = e.target.value; this.setState({ setup }); },
+      onRemove: () => { setup.players.splice(i, 1); this.setState({ setup }); },
+    }));
+    if (!v.isGame) return v;
+
+    // ----- game vals -----
+    const cur = g.players[g.current];
+    const showLabels = this.props.cityLabels ?? true;
+    v.turn = g.turn;
+    v.deckCount = g.playerDeck.length;
+    v.outbreaks = g.outbreaks;
+    v.outbreakColor = g.outbreaks >= 6 ? '#B42318' : g.outbreaks >= 4 ? '#B54708' : '#14181D';
+
+    v.strains = E.COLORS.map(c => {
+      const s = E.STRAINS[c];
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      return {
+        name: s.name, status,
+        statusColor: g.cured[c] ? '#0E9F8A' : '#98A2AD',
+        title: `${s.name} â€” supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
+        chipStyle: `display:flex;align-items:center;gap:7px;border:1px solid #E4E8EC;border-radius:7px;padding:5px 10px;background:${g.cured[c] ? '#F0FAF8' : '#FAFBFC'};`,
+        dotStyle: `width:11px;height:11px;border-radius:3px;background:${s.hex};`,
+      };
+    });
+    v.rateCells = E.INFECTION_RATES.map((r, i) => ({
+      v: r,
+      style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:#EDF0F2;color:#98A2AD;'}`,
+    }));
+
+    // board â€” project cities through the Leaflet map
+    v.mapRef = this.mapRef;
+    const map = this.map;
+    const px = {};
+    if (map) {
+      for (const id of Object.keys(E.CITIES)) {
+        const c = E.CITIES[id];
+        px[id] = map.latLngToContainerPoint([c.lat, c.lon]);
+      }
+    }
+    const lines = [];
+    if (map) {
+      const P = (lat, lon) => map.latLngToContainerPoint([lat, lon]);
+      for (const [a, b] of E.EDGES) {
+        const ca = E.CITIES[a], cb = E.CITIES[b];
+        if (Math.abs(ca.lon - cb.lon) > 180) {
+          // crosses the antimeridian â€” draw both wrapped halves
+          const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
+          const pw = P(w.lat, w.lon), pe = P(e2.lat, e2.lon);
+          const peW = P(e2.lat, e2.lon - 360), pwE = P(w.lat, w.lon + 360);
+          lines.push({ x1: pw.x, y1: pw.y, x2: peW.x, y2: peW.y });
+          lines.push({ x1: pe.x, y1: pe.y, x2: pwE.x, y2: pwE.y });
+        } else {
+          lines.push({ x1: px[a].x, y1: px[a].y, x2: px[b].x, y2: px[b].y });
+        }
+      }
+    }
+    v.lines = lines;
+
+    const pawnCity = g.players[cur.role === 'logistics' ? ui.actPawn : g.current].city;
+    const targeting = !!ui.mode;
+    v.cityNodes = !map ? [] : Object.keys(E.CITIES).map(id => {
+      const c = E.CITIES[id];
+      const p = px[id];
+      const cubes = E.COLORS.filter(col => g.cubes[id][col] > 0).map(col => ({ hex: E.STRAINS[col].hex, n: g.cubes[id][col] }));
+      const isStation = g.stations.includes(id);
+      const isHere = pawnCity === id;
+      const adj = E.ADJ[pawnCity].includes(id);
+      let dot = `width:13px;height:13px;border-radius:${isStation ? '3px' : '50%'};background:${isStation ? '#14181D' : '#fff'};border:3px solid ${E.STRAINS[c.color].hex};flex-shrink:0;`;
+      if (isHere) dot += 'animation:pulseRing 1.6s infinite;';
+      else if (targeting) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.3);';
+      else if (adj && g.phase === 'actions') dot += 'box-shadow:0 0 0 3px rgba(20,24,29,.12);';
+      return {
+        id, x: p.x, y: p.y, name: c.name,
+        label: (isStation ? 'â–£ ' : '') + c.name,
+        showLabel: showLabels, dotStyle: dot, cubes,
+        pawns: g.players.filter(q => q.city === id).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
+        onClick: () => this.onCity(id),
+      };
+    });
+    v.fx = !map ? [] : g.effects.map(f => {
+      const p = px[f.city];
+      return { x: p.x, y: p.y, hex: f.type === 'treat' ? '#0E9F8A' : f.type === 'build' ? '#14181D' : E.STRAINS[f.color]?.hex || '#14181D', size: f.type === 'outbreak' ? 64 : 30 };
+    });
+
+    // current player panel
+    v.curName = cur.name; v.curNum = cur.i + 1;
+    v.curRoleName = E.ROLES[cur.role].name;
+    v.curRoleHex = E.ROLES[cur.role].hex;
+    v.curCity = E.CITIES[cur.city].name;
+    v.curBadgeStyle = `width:30px;height:30px;border-radius:50%;background:${E.ROLES[cur.role].hex};color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;`;
+    v.actionPips = [0, 1, 2, 3].map(i => ({
+      style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:#E4E8EC;'}`,
+    }));
+    v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
+    v.actPawnValue = ui.actPawn;
+
+    // action buttons
+    const acting = g.phase === 'actions';
+    const btn = (enabled, accentHex) => `border:1px solid ${enabled ? (accentHex || '#14181D') : '#E4E8EC'};background:${enabled ? '#fff' : '#F7F8F9'};color:${enabled ? (accentHex || '#14181D') : '#B9C2CA'};border-radius:6px;padding:7px 11px;font-size:12.5px;font-weight:600;cursor:${enabled ? 'pointer' : 'default'};font-family:'IBM Plex Sans',sans-serif;`;
+    v.treatBtns = acting ? E.canTreat(g).map(col => ({
+      label: `Treat ${E.STRAINS[col].name} (${g.cubes[cur.city][col]})`,
+      disabled: false, style: btn(true, E.STRAINS[col].hex),
+      onClick: () => this.mut(gg => E.doTreat(gg, col)),
+    })) : [];
+    const bchk = acting ? E.canBuild(g) : { ok: false, why: '' };
+    v.buildDisabled = !bchk.ok; v.buildWhy = bchk.why || (bchk.free ? 'Free for the Site Engineer' : 'Discards this city\'s card'); v.buildStyle = btn(bchk.ok);
+    const cchk = acting ? E.canCure(g) : { ok: false, why: '' };
+    v.cureDisabled = !cchk.ok; v.cureWhy = cchk.why || ''; v.cureStyle = btn(cchk.ok, '#0E9F8A');
+    const sOpts = acting ? E.shareOptions(g) : [];
+    v.shareDisabled = !sOpts.length; v.shareWhy = sOpts.length ? '' : 'Requires another official in your city with a matching file'; v.shareStyle = btn(sOpts.length > 0);
+    v.passDisabled = !acting; v.passStyle = btn(acting, '#98A2AD');
+
+    // hand
+    v.handCount = cur.hand.length;
+    const cardRow = `display:flex;align-items:center;gap:8px;border:1px solid #E4E8EC;border-radius:6px;padding:6px 9px;background:#FAFBFC;`;
+    v.hand = cur.hand.map(c => c.type === 'city' ? {
+      style: cardRow, hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name, tag: E.STRAINS[c.color].name, playable: false,
+    } : {
+      style: cardRow, hex: '#0E9F8A', label: E.EVENTS[c.event].name, tag: 'EVENT', playable: acting || g.phase === 'draw',
+      onPlay: () => this.playEventFrom(cur.i, c.event),
+    });
+    const showOthers = this.props.showOtherHands ?? true;
+    v.others = showOthers ? g.players.filter(p => p.i !== cur.i).map(p => ({
+      num: p.i + 1, name: p.name,
+      badgeStyle: `width:18px;height:18px;border-radius:50%;background:${E.ROLES[p.role].hex};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;flex-shrink:0;`,
+      cards: p.hand.filter(c => c.type === 'city').map(c => ({ hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name })),
+      events: p.hand.filter(c => c.type === 'event').map(c => ({ label: E.EVENTS[c.event].name, onPlay: () => this.playEventFrom(p.i, c.event) })),
+    })) : [];
+
+    // log
+    const logColors = { bad: '#B42318', good: '#0B7F6E', infect: '#B54708', event: '#5B5BD6', move: '#5C6670', draw: '#5C6670', sys: '#98A2AD' };
+    v.logEntries = g.log.slice(0, 120).map(e => ({ text: e.text, color: logColors[e.kind] || '#5C6670', bar: e.kind === 'bad' ? '#B42318' : e.kind === 'good' ? '#0E9F8A' : '#E4E8EC' }));
+
+    // banners
+    v.showInfect = g.phase === 'infect' && !!g.pending;
+    if (v.showInfect) {
+      v.infectDone = g.pending.done; v.infectTotal = g.pending.total;
+      v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
+    }
+    v.showTarget = targeting;
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding â€” click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet â€” click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : '';
+    v.showToast = !!ui.toast; v.toastText = ui.toast || '';
+
+    // modals
+    const modal = ui.modal;
+    v.showMove = modal?.type === 'move';
+    if (v.showMove) {
+      v.moveDestName = E.CITIES[modal.dest].name;
+      const subs = { drive: 'Adjacent city', direct: 'Discard the destination card', charter: 'Discard your current city\'s card', shuttle: 'Between two labs', engineerFly: 'Site Engineer, once per turn', rendezvous: 'Logistics Chief special' };
+      v.moveOpts = modal.opts.map(o => ({ label: o.label, sub: subs[o.how] || '', onClick: () => this.doMoveOpt(o) }));
+    }
+    v.showPicker = modal?.type === 'picker';
+    if (v.showPicker) {
+      v.pickerTitle = modal.title; v.pickerSub = modal.sub;
+      v.pickerItems = modal.items; v.pickerCancellable = true;
+    }
+    // discard modal reuses picker
+    if (g.phase === 'discard' && g.pending?.type === 'discard') {
+      const dp = g.players[g.pending.player];
+      v.showPicker = true; v.pickerCancellable = false;
+      v.pickerTitle = `${dp.name} is over the hand limit`;
+      v.pickerSub = `Hand limit is 7. Discard down. (${dp.hand.length}/7)`;
+      v.pickerItems = dp.hand.map(c => ({
+        hex: c.type === 'event' ? '#0E9F8A' : E.STRAINS[c.color].hex,
+        label: c.type === 'event' ? E.EVENTS[c.event].name : E.CITIES[c.city].name,
+        sub: c.type === 'event' ? 'EVENT' : E.STRAINS[c.color].name,
+        onClick: () => this.mut(gg => E.doDiscard(gg, dp.i, c.uid)),
+      }));
+    }
+    v.showModel = modal?.type === 'model';
+    if (v.showModel) {
+      const byUid = {};
+      for (const c of g.infectionDeck.slice(-6)) byUid[c.uid] = c;
+      const order = modal.order;
+      v.modelCards = order.map((uid, i) => ({
+        pos: i + 1, name: E.CITIES[byUid[uid].city].name, hex: E.STRAINS[byUid[uid].color].hex,
+        up: () => { if (i > 0) { [order[i - 1], order[i]] = [order[i], order[i - 1]]; this.setUi({ modal }); } },
+        down: () => { if (i < order.length - 1) { [order[i + 1], order[i]] = [order[i], order[i + 1]]; this.setUi({ modal }); } },
+      }));
+      v.onModelConfirm = () => { this.setUi({ modal: null }); this.mut(gg => E.eventModelApply(gg, modal.player, order)); };
+    }
+
+    // draw overlay
+    const pd = g.pending;
+    v.showDraw = g.phase === 'draw' && pd?.type === 'draw';
+    if (v.showDraw) {
+      const shown = ui.drawShown;
+      v.drawHidden = !shown;
+      v.drawShown = !!shown;
+      v.drawIdxLabel = Math.min(pd.idx + (shown ? 0 : 1), 2);
+      if (shown) {
+        v.drawIdxLabel = pd.epidemicPending ? pd.idx + 1 : pd.idx;
+        if (shown.type === 'epidemic') {
+          v.drawKind = 'EPIDEMIC SURGE'; v.drawHex = '#B42318'; v.drawTitle = 'It got worse';
+          v.drawDesc = `1. Infection rate rises.\n2. A city at the BOTTOM of the infection deck takes 3 cubes.\n3. All past infection reports get reshuffled on top.`;
+          v.epidemicPending = !!pd.epidemicPending;
+          v.drawContinueVisible = !pd.epidemicPending;
+          const holders = E.findEventHolders(g, 'bubble');
+          v.bubbleOffer = holders.map(h => ({
+            label: `${h.name}: play Contact Bubble first`,
+            onClick: () => this.playEventFrom(h.i, 'bubble'),
+          }));
+        } else if (shown.type === 'event') {
+          v.drawKind = 'EVENT'; v.drawHex = '#0E9F8A'; v.drawTitle = E.EVENTS[shown.event].name;
+          v.drawDesc = E.EVENTS[shown.event].desc;
+          v.epidemicPending = false; v.drawContinueVisible = true;
+        } else {
+          v.drawKind = E.STRAINS[shown.color].name + ' STRAIN'; v.drawHex = E.STRAINS[shown.color].hex;
+          v.drawTitle = E.CITIES[shown.city].name;
+          v.drawDesc = 'Added to hand. A city card: currency for flights, labs, and vaccines.';
+          v.epidemicPending = false; v.drawContinueVisible = true;
+        }
+      }
+    }
+
+    // end overlay
+    v.showEnd = g.phase === 'won' || g.phase === 'lost';
+    if (v.showEnd) {
+      if (g.phase === 'won') {
+        v.endKicker = 'SIMULATION COMPLETE'; v.endHue = '#0E9F8A'; v.endTitle = 'All four strains cured';
+        v.endBody = `Humanity wins in ${g.turn} turns with ${g.outbreaks} outbreak${g.outbreaks === 1 ? '' : 's'} on the record. The after-action report will credit "teamwork" and, quietly, luck.`;
+      } else {
+        v.endKicker = 'SIMULATION FAILED'; v.endHue = '#B42318'; v.endTitle = 'The response collapsed';
+        v.endBody = g.lossReason || '';
+      }
+    }
+    return v;
+  }
+}
+</script>
+</body>
+</html>
+
