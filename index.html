@@ -461,7 +461,7 @@ class Component extends DCLogic {
       interactive: false,
     });
     chart.chartContainer.set('background', am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 }));
-    // NOTE: no am5map.ZoomControl &mdash; its canvas buttons get shadowed by the HTML
+    // NOTE: no am5map.ZoomControl â€” its canvas buttons get shadowed by the HTML
     // overlay's hit-testing. We drive zoom from HTML buttons + a wheel handler instead.
     const onView = () => {
       this.syncOverlay();
@@ -715,7 +715,7 @@ class Component extends DCLogic {
       const path = this.bfs(g.players[pawnIdx].city, id);
       if (path) {
         const cost = path.length - 1;
-        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route &mdash; ${cost} actions` });
+        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route â€” ${cost} actions` });
         else if (!opts.length) return this.toast(`Too far overland: needs ${cost} actions, ${g.actionsLeft} left.`);
       }
     }
@@ -767,7 +767,7 @@ class Component extends DCLogic {
         type: 'picker', title: `Develop the ${E.STRAINS[chk.color].name} vaccine`,
         sub: `Turn in ${chk.need} matching samples. This cannot be undone (science rarely can).`,
         items: [{
-          hex: E.STRAINS[chk.color].hex, label: `Confirm &mdash; submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
+          hex: E.STRAINS[chk.color].hex, label: `Confirm â€” submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
           onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doCure(gg, chk.color, cards.map(c => c.uid))); },
         }],
       },
@@ -907,11 +907,11 @@ class Component extends DCLogic {
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
-      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE &#10003;' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
       return {
         name: s.name, status,
         statusColor: g.cured[c] ? '#0E9F8A' : '#98A2AD',
-        title: `${s.name} &mdash; supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
+        title: `${s.name} â€” supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
         chipStyle: `display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;border:1px solid #E4E8EC;border-radius:7px;padding:5px 10px;background:${g.cured[c] ? '#F0FAF8' : '#FAFBFC'};`,
         dotStyle: `width:11px;height:11px;border-radius:3px;background:${s.hex};`,
       };
@@ -921,10 +921,11 @@ class Component extends DCLogic {
       style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:#EDF0F2;color:#98A2AD;'}`,
     }));
 
-    // board &mdash; project cities through the amCharts map
+    // board â€” project cities through the amCharts map
     v.mapRef = this.mapRef;
     v.overlayRef = this.overlayRef;
     const mobile = (this.state.vw ?? window.innerWidth) < 760;
+    const isTouch = (typeof window !== 'undefined') && (('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0);
     const open = ui.panelOpen;
     v.togglePanel = () => this.setUi({ panelOpen: !open });
     if (mobile) {
@@ -935,8 +936,9 @@ class Component extends DCLogic {
       v.mainStyle = "flex:1;display:flex;flex-direction:column;min-height:0;position:relative;";
       v.panelStyle = `height:${open ? '52vh' : '0px'};width:100%;flex-shrink:0;background:#FFFFFF;border-top:1px solid #E4E8EC;transition:height .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:100%;height:52vh;display:flex;flex-direction:column;min-height:0;";
-      v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:84px;height:24px;border:1px solid #E4E8EC;border-bottom:none;border-radius:8px 8px 0 0;background:#FFFFFF;cursor:pointer;transition:bottom .28s ease;color:#5C6670;font-size:12px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
-      v.panelChevron = open ? '&#9662;' : '&#9652;';
+      const tw = isTouch ? 168 : 84, th = isTouch ? 48 : 24, tf = isTouch ? 24 : 12;
+      v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:${tw}px;height:${th}px;border:1px solid #E4E8EC;border-bottom:none;border-radius:8px 8px 0 0;background:#FFFFFF;cursor:pointer;transition:bottom .28s ease;color:#5C6670;font-size:${tf}px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
+      v.panelChevron = open ? '\u25BE' : '\u25B4';
     } else {
       v.topBarStyle = "height:58px;background:#FFFFFF;border-bottom:1px solid #E4E8EC;display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;";
       v.dividerStyle = "width:1px;height:32px;background:#E4E8EC;";
@@ -945,8 +947,9 @@ class Component extends DCLogic {
       v.mainStyle = "flex:1;display:flex;min-height:0;position:relative;";
       v.panelStyle = `width:${open ? 390 : 0}px;flex-shrink:0;background:#FFFFFF;border-left:1px solid #E4E8EC;transition:width .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:390px;height:100%;display:flex;flex-direction:column;min-height:0;";
-      v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:22px;height:64px;border:1px solid #E4E8EC;border-right:none;border-radius:8px 0 0 8px;background:#FFFFFF;cursor:pointer;transition:right .28s ease;color:#5C6670;font-size:11px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
-      v.panelChevron = open ? '&#9656;' : '&#9666;';
+      const tw = isTouch ? 44 : 22, th = isTouch ? 128 : 64, tf = isTouch ? 22 : 11;
+      v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:${tw}px;height:${th}px;border:1px solid #E4E8EC;border-right:none;border-radius:8px 0 0 8px;background:#FFFFFF;cursor:pointer;transition:right .28s ease;color:#5C6670;font-size:${tf}px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
+      v.panelChevron = open ? '\u25B8' : '\u25C2';
     }
     const map = this.chart;
     const px = {};
@@ -963,7 +966,7 @@ class Component extends DCLogic {
       for (const [a, b] of E.EDGES) {
         const ca = E.CITIES[a], cb = E.CITIES[b];
         if (Math.abs(ca.lon - cb.lon) > 180) {
-          // crosses the antimeridian &mdash; split at &plusmn;180 with interpolated latitude
+          // crosses the antimeridian â€” split at Â±180 with interpolated latitude
           const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
           const span = (w.lon + 360) - e2.lon;
           const latAt180 = e2.lat + (w.lat - e2.lat) * ((180 - e2.lon) / span);
@@ -998,7 +1001,7 @@ class Component extends DCLogic {
       else if (adj && g.phase === 'actions') dot += 'box-shadow:0 0 0 3px rgba(20,24,29,.12);';
       return {
         id, x: p.x, y: p.y, name: c.name,
-        label: (isStation ? '&#9635; ' : '') + c.name,
+        label: (isStation ? '\u25A3 ' : '') + c.name,
         showLabel: showLabels, dotStyle: dot, cubes,
         pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
         onClick: () => this.onCity(id),
@@ -1040,7 +1043,7 @@ class Component extends DCLogic {
       style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:#E4E8EC;'}`,
     }));
     v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
-    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} &middot; ${p.name}` }));
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
     v.actPawnValue = ui.actPawn;
 
     // action buttons
@@ -1095,7 +1098,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding &mdash; click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet &mdash; click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol &mdash; click a city to clear & shield it' : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding â€” click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet â€” click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol â€” click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
     const queue = ui.newsQueue || [];
     v.showNews = queue.length > 0;
