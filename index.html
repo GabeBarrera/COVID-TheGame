@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -13,10 +13,12 @@
 <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 <style>
-html,body{margin:0;padding:0;background:#F1F3F5;height:100%;}
+:root{--app-bg:#F1F3F5;--panel:#FFFFFF;--surface2:#FAFBFC;--border:#E4E8EC;--text:#14181D;--text-sub:#5C6670;--text-mute:#98A2AD;--board:#DDE6EB;}
+body[data-theme="dark"]{--app-bg:#0E1116;--panel:#161B22;--surface2:#1C232C;--border:#2A323C;--text:#E6EAEE;--text-sub:#9AA4AE;--text-mute:#748090;--board:#0B1620;}
+html,body{margin:0;padding:0;background:var(--app-bg);height:100%;transition:background .25s ease;}
 *{box-sizing:border-box;}
 a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
-::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:#D4DAE0;border-radius:4px;}
+::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 @keyframes ripple{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0}}
 @keyframes popIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 @keyframes fadeUp{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
@@ -24,17 +26,17 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 </helmet>
-<div style="width:100vw;height:100vh;display:flex;flex-direction:column;font-family:'IBM Plex Sans',sans-serif;color:#14181D;overflow:hidden;background:#F1F3F5;">
+<div style="width:100vw;height:100vh;display:flex;flex-direction:column;font-family:'IBM Plex Sans',sans-serif;color:var(--text);overflow:hidden;background:var(--app-bg);">
 
   <!-- ============ SETUP ============ -->
   <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
     <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;">
-      <div style="width:640px;max-width:94vw;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
+      <div style="width:640px;max-width:94vw;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR &middot; v2.7</div>
         <h1 style="margin:8px 0 4px;font-size:34px;font-weight:700;letter-spacing:-0.5px;">COVID: The Game</h1>
-        <div style="font-size:13.5px;color:#5C6670;margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2&ndash;4 officials. Any resemblance to actual events is entirely the point.</div>
+        <div style="font-size:13.5px;color:var(--text-sub);margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2&ndash;4 officials. Any resemblance to actual events is entirely the point.</div>
 
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#5C6670;margin-bottom:8px;">THREAT LEVEL</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-sub);margin-bottom:8px;">THREAT LEVEL</div>
         <div style="display:flex;gap:8px;margin-bottom:26px;">
           <sc-for list="{{ epiOptions }}" as="o" hint-placeholder-count="3">
             <button onClick="{{ o.onPick }}" style="{{ o.style }}">
@@ -44,14 +46,14 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           </sc-for>
         </div>
 
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#5C6670;margin-bottom:8px;">RESPONSE TEAM</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-sub);margin-bottom:8px;">RESPONSE TEAM</div>
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
           <sc-for list="{{ setupPlayers }}" as="p" hint-placeholder-count="2">
-            <div style="display:flex;flex-direction:column;gap:5px;border:1px solid #E4E8EC;border-radius:8px;padding:12px 14px;background:#FAFBFC;">
+            <div style="display:flex;flex-direction:column;gap:5px;border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface2);">
               <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <div style="{{ p.badgeStyle }}">{{ p.num }}</div>
-                <input value="{{ p.name }}" onChange="{{ p.onName }}" style="flex:1;min-width:120px;border:1px solid #D4DAE0;border-radius:6px;padding:7px 10px;font-size:13.5px;font-family:'IBM Plex Sans',sans-serif;background:#fff;outline:none;" />
-                <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="border:1px solid #D4DAE0;border-radius:6px;padding:7px 8px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;background:#fff;">
+                <input value="{{ p.name }}" onChange="{{ p.onName }}" style="flex:1;min-width:120px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13.5px;font-family:'IBM Plex Sans',sans-serif;background:var(--panel);outline:none;" />
+                <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;background:var(--panel);">
                   <option value="nurse">Frontline Nurse</option>
                   <option value="vaccinologist">Vaccinologist</option>
                   <option value="analyst">Data Analyst</option>
@@ -60,19 +62,19 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
                   <option value="quarantine">Quarantine Officer</option>
                 </select>
                 <sc-if value="{{ p.canRemove }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:#98A2AD;cursor:pointer;font-size:16px;padding:4px;" title="Remove">&#10005;</button>
+                  <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:var(--text-mute);cursor:pointer;font-size:16px;padding:4px;" title="Remove">&#10005;</button>
                 </sc-if>
               </div>
-              <div style="font-size:12px;color:#5C6670;font-style:italic;padding-left:38px;">{{ p.blurb }}</div>
+              <div style="font-size:12px;color:var(--text-sub);font-style:italic;padding-left:38px;">{{ p.blurb }}</div>
             </div>
           </sc-for>
         </div>
         <sc-if value="{{ canAdd }}" hint-placeholder-val="{{ true }}">
-          <button onClick="{{ addPlayer }}" style="border:1px dashed #C3CBD3;background:none;border-radius:8px;padding:9px;width:100%;color:#5C6670;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;color:#0E9F8A;">+ Add official</button>
+          <button onClick="{{ addPlayer }}" style="border:1px dashed #C3CBD3;background:none;border-radius:8px;padding:9px;width:100%;color:var(--text-sub);font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;color:#0E9F8A;">+ Add official</button>
         </sc-if>
 
         <button onClick="{{ startGame }}" style="margin-top:24px;width:100%;background:#0E9F8A;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#0B7F6E;">Convene the task force</button>
-        <div style="font-size:11.5px;color:#98A2AD;text-align:center;margin-top:10px;">Win: vaccinate all four strains. Lose: 8 outbreaks, an exhausted cube supply, or an empty briefing deck.</div>
+        <div style="font-size:11.5px;color:var(--text-mute);text-align:center;margin-top:10px;">Win: vaccinate all four strains. Lose: 8 outbreaks, an exhausted cube supply, or an empty briefing deck.</div>
       </div>
     </div>
   </sc-if>
@@ -83,7 +85,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     <div data-screen-label="Top bar" style="{{ topBarStyle }}">
       <div>
         <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.5px;">COVID: THE GAME</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1.5px;">TURN {{ turn }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mute);letter-spacing:1.5px;">TURN {{ turn }}</div>
       </div>
       <div style="{{ dividerStyle }}"></div>
       <div style="{{ strainRowStyle }}">
@@ -96,10 +98,18 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             </div>
           </div>
         </sc-for>
+        <div onClick="{{ onLabsToggle }}" title="Research labs" style="{{ labsChipStyle }}">
+          <div style="width:11px;height:11px;border-radius:3px;background:#06B6D4;flex-shrink:0;"></div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:1px;">LABS</div>
+            <div style="font-size:10px;color:var(--text-mute);font-weight:600;">{{ labsCountText }}</div>
+          </div>
+          <div style="font-size:8px;color:var(--text-mute);margin-left:1px;">{{ labsChevron }}</div>
+        </div>
       </div>
       <div style="{{ spacerStyle }}"></div>
       <div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:3px;">INFECTION RATE</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mute);letter-spacing:1px;margin-bottom:3px;">INFECTION RATE</div>
         <div style="display:flex;gap:3px;">
           <sc-for list="{{ rateCells }}" as="r" hint-placeholder-count="7">
             <div style="{{ r.style }}">{{ r.v }}</div>
@@ -107,20 +117,25 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
         </div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:2px;">OUTBREAKS</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;color:{{ outbreakColor }};">{{ outbreaks }}<span style="font-size:12px;color:#98A2AD;">/8</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mute);letter-spacing:1px;margin-bottom:2px;">OUTBREAKS</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;color:{{ outbreakColor }};">{{ outbreaks }}<span style="font-size:12px;color:var(--text-mute);">/8</span></div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#98A2AD;letter-spacing:1px;margin-bottom:2px;">BRIEFING DECK</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-mute);letter-spacing:1px;margin-bottom:2px;">BRIEFING DECK</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;">{{ deckCount }}</div>
       </div>
+      <button onClick="{{ onMenuToggle }}" title="Menu" style="{{ menuBtnStyle }}">
+        <div style="width:17px;height:2px;border-radius:2px;background:var(--text);"></div>
+        <div style="width:17px;height:2px;border-radius:2px;background:var(--text);"></div>
+        <div style="width:17px;height:2px;border-radius:2px;background:var(--text);"></div>
+      </button>
     </div>
 
     <!-- Main -->
     <div style="{{ mainStyle }}">
       <button onClick="{{ togglePanel }}" title="Toggle panel" style="{{ toggleStyle }}">{{ panelChevron }}</button>
       <!-- Board -->
-      <div data-screen-label="World board" style="flex:1;position:relative;background:#DDE6EB;overflow:hidden;">
+      <div data-screen-label="World board" style="flex:1;position:relative;background:var(--board);overflow:hidden;">
         <div ref="{{ mapRef }}" style="position:absolute;inset:0;z-index:1;"></div>
         <div ref="{{ overlayRef }}" style="position:absolute;inset:0;z-index:2;pointer-events:none;">
           <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible;pointer-events:none;">
@@ -135,7 +150,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <div style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;width:{{ f.size }}px;height:{{ f.size }}px;border-radius:50%;border:3px solid {{ f.hex }};pointer-events:none;animation:ripple 1.3s ease-out forwards;z-index:5;"></div>
           </sc-for>
           <sc-if value="{{ showPing }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;left:{{ pingX }}px;top:{{ pingY }}px;width:26px;height:26px;border-radius:50%;border:3px solid #14181D;pointer-events:none;animation:ripple 1.4s ease-out forwards;z-index:6;"></div>
+            <div style="position:absolute;left:{{ pingX }}px;top:{{ pingY }}px;width:26px;height:26px;border-radius:50%;border:3px solid var(--text);pointer-events:none;animation:ripple 1.4s ease-out forwards;z-index:6;"></div>
           </sc-if>
           <sc-if value="{{ showTravel }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;width:15px;height:15px;border-radius:50%;background:{{ travelHex }};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,29,.45);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;pointer-events:none;">{{ travelNum }}</div>
@@ -152,11 +167,11 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
               </div>
               <div style="{{ c.dotStyle }}"></div>
               <sc-if value="{{ c.showLabel }}" hint-placeholder-val="{{ true }}">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#5C6670;white-space:nowrap;margin-top:2px;background:rgba(247,248,249,.8);padding:0 2px;border-radius:2px;">{{ c.label }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-sub);white-space:nowrap;margin-top:2px;background:var(--surface2);padding:0 2px;border-radius:2px;">{{ c.label }}</div>
               </sc-if>
-              <div style="display:flex;gap:2px;height:11px;margin-top:1px;">
+              <div style="display:flex;gap:2px;margin-top:1px;align-items:flex-end;">
                 <sc-for list="{{ c.pawns }}" as="w" hint-placeholder-count="0">
-                  <div title="{{ w.name }}" style="width:11px;height:11px;border-radius:50%;background:{{ w.hex }};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(20,24,29,.35);color:#fff;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">{{ w.num }}</div>
+                  <div title="{{ w.name }}" style="{{ w.style }}">{{ w.num }}</div>
                 </sc-for>
               </div>
             </div>
@@ -165,8 +180,8 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <!-- zoom controls (HTML, so they always receive clicks above the map) -->
         <div style="position:absolute;right:14px;bottom:14px;z-index:50;display:flex;flex-direction:column;gap:6px;pointer-events:auto;">
-          <button onClick="{{ onZoomIn }}" title="Zoom in" style="width:34px;height:34px;border:1px solid #E4E8EC;background:#FFFFFF;color:#14181D;border-radius:8px;font-size:19px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">+</button>
-          <button onClick="{{ onZoomOut }}" title="Zoom out" style="width:34px;height:34px;border:1px solid #E4E8EC;background:#FFFFFF;color:#14181D;border-radius:8px;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">&minus;</button>
+          <button onClick="{{ onZoomIn }}" title="Zoom in" style="width:34px;height:34px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;font-size:19px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">+</button>
+          <button onClick="{{ onZoomOut }}" title="Zoom out" style="width:34px;height:34px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">&minus;</button>
         </div>
 
         <!-- infect banner -->
@@ -196,9 +211,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <!-- satirical news headline queue -->
         <sc-if value="{{ showNews }}" hint-placeholder-val="{{ false }}">
-          <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;bottom:16px;left:16px;z-index:45;max-width:min(360px,72vw);background:#FFFFFF;border:1px solid #E4E8EC;border-left:4px solid {{ newsHex }};border-radius:8px;box-shadow:0 10px 30px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
+          <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;bottom:16px;left:16px;z-index:45;max-width:min(360px,72vw);background:var(--panel);border:1px solid var(--border);border-left:4px solid {{ newsHex }};border-radius:8px;box-shadow:0 10px 30px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
             <div style="display:flex;align-items:center;gap:8px;background:#B42318;color:#fff;padding:5px 10px;">
-              <div style="width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1s infinite;flex-shrink:0;"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--panel);animation:blink 1s infinite;flex-shrink:0;"></div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:2px;font-weight:700;flex:1;">BREAKING &middot; {{ newsCity }}</div>
               <sc-if value="{{ showNewsMore }}" hint-placeholder-val="{{ false }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;background:rgba(255,255,255,.22);border-radius:4px;padding:1px 5px;">{{ newsMoreLabel }}</div>
@@ -214,7 +229,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
       <div data-screen-label="Control panel" style="{{ panelStyle }}">
         <div style="{{ panelInnerStyle }}">
         <!-- current player -->
-        <div style="padding:14px 16px;border-bottom:1px solid #E4E8EC;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="{{ curBadgeStyle }}">{{ curNum }}</div>
             <div style="flex:1;">
@@ -228,9 +243,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             </div>
           </div>
           <sc-if value="{{ showPawnSel }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:9px;display:flex;align-items:center;gap:8px;font-size:12px;color:#5C6670;">
+            <div style="margin-top:9px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-sub);">
               Moving pawn:
-              <select value="{{ actPawnValue }}" onChange="{{ onPawnSel }}" style="border:1px solid #D4DAE0;border-radius:5px;padding:4px 6px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;background:#fff;">
+              <select value="{{ actPawnValue }}" onChange="{{ onPawnSel }}" style="border:1px solid var(--border);border-radius:5px;padding:4px 6px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;background:var(--panel);">
                 <sc-for list="{{ pawnOptions }}" as="po" hint-placeholder-count="2">
                   <option value="{{ po.value }}">{{ po.label }}</option>
                 </sc-for>
@@ -240,8 +255,8 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
         </div>
 
         <!-- actions -->
-        <div style="padding:12px 16px;border-bottom:1px solid #E4E8EC;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">ACTIONS &mdash; CLICK A CITY TO MOVE</div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);margin-bottom:8px;">ACTIONS &mdash; CLICK A CITY TO MOVE</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             <sc-for list="{{ treatBtns }}" as="t" hint-placeholder-count="0">
               <button onClick="{{ t.onClick }}" disabled="{{ t.disabled }}" style="{{ t.style }}">{{ t.label }}</button>
@@ -254,14 +269,14 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
         </div>
 
         <!-- hand -->
-        <div style="padding:12px 16px;border-bottom:1px solid #E4E8EC;max-height:34%;overflow:auto;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">HAND ({{ handCount }}/7)</div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);max-height:34%;overflow:auto;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);margin-bottom:8px;">HAND ({{ handCount }}/7)</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ hand }}" as="h" hint-placeholder-count="3">
               <div style="{{ h.style }}">
                 <div style="width:4px;align-self:stretch;border-radius:2px;background:{{ h.hex }};"></div>
                 <div style="flex:1;font-size:12.5px;font-weight:600;">{{ h.label }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#98A2AD;letter-spacing:.5px;">{{ h.tag }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--text-mute);letter-spacing:.5px;">{{ h.tag }}</div>
                 <sc-if value="{{ h.playable }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ h.onPlay }}" style="background:#0E9F8A;color:#fff;border:none;border-radius:4px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">PLAY</button>
                 </sc-if>
@@ -270,11 +285,11 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           </div>
           <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ others }}" as="ot" hint-placeholder-count="1">
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:#5C6670;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--text-sub);">
                 <div style="{{ ot.badgeStyle }}">{{ ot.num }}</div>
-                <span style="font-weight:600;color:#14181D;">{{ ot.name }}</span>
+                <span style="font-weight:600;color:var(--text);">{{ ot.name }}</span>
                 <sc-for list="{{ ot.cards }}" as="oc" hint-placeholder-count="0">
-                  <span style="border:1px solid #E4E8EC;border-left:3px solid {{ oc.hex }};border-radius:3px;padding:1px 5px;font-size:10.5px;">{{ oc.label }}</span>
+                  <span style="border:1px solid var(--border);border-left:3px solid {{ oc.hex }};border-radius:3px;padding:1px 5px;font-size:10.5px;">{{ oc.label }}</span>
                 </sc-for>
                 <sc-for list="{{ ot.events }}" as="oe" hint-placeholder-count="0">
                   <button onClick="{{ oe.onPlay }}" style="border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">{{ oe.label }} &#9656;</button>
@@ -286,7 +301,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <!-- log -->
         <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;padding:10px 16px 6px;">SITUATION LOG</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 16px 6px;">SITUATION LOG</div>
           <div style="flex:1;overflow:auto;padding:0 16px 14px;display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ logEntries }}" as="e" hint-placeholder-count="6">
               <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.45;color:{{ e.color }};border-left:2px solid {{ e.bar }};padding-left:8px;">{{ e.text }}</div>
@@ -300,35 +315,35 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     <!-- ===== overlays ===== -->
     <sc-if value="{{ showMove }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancel }}">
-        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:380px;max-width:92vw;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
+        <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:380px;max-width:92vw;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
           <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Travel to {{ moveDestName }}</div>
-          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">{{ moveCostText }}</div>
+          <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ moveCostText }}</div>
           <div style="display:flex;flex-direction:column;gap:7px;">
             <sc-for list="{{ moveOpts }}" as="m" hint-placeholder-count="2">
-              <button onClick="{{ m.onClick }}" style="text-align:left;border:1px solid #D4DAE0;background:#FAFBFC;border-radius:7px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">{{ m.label }}<span style="display:block;font-size:11px;color:#98A2AD;font-weight:400;">{{ m.sub }}</span></button>
+              <button onClick="{{ m.onClick }}" style="text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:7px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">{{ m.label }}<span style="display:block;font-size:11px;color:var(--text-mute);font-weight:400;">{{ m.sub }}</span></button>
             </sc-for>
           </div>
-          <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:#98A2AD;font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
+          <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:var(--text-mute);font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
         </div>
       </div>
     </sc-if>
 
     <sc-if value="{{ showPicker }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancelSoft }}">
-        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:430px;max-width:92vw;max-height:80vh;overflow:auto;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
+        <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:430px;max-width:92vw;max-height:80vh;overflow:auto;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
           <div style="font-size:16px;font-weight:700;margin-bottom:4px;">{{ pickerTitle }}</div>
-          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">{{ pickerSub }}</div>
+          <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ pickerSub }}</div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ pickerItems }}" as="pi" hint-placeholder-count="3">
-              <button onClick="{{ pi.onClick }}" style="display:flex;align-items:center;gap:9px;text-align:left;border:1px solid #D4DAE0;background:#FAFBFC;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
+              <button onClick="{{ pi.onClick }}" style="display:flex;align-items:center;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
                 <div style="width:9px;height:9px;border-radius:2px;background:{{ pi.hex }};flex-shrink:0;"></div>
                 <span style="flex:1;">{{ pi.label }}</span>
-                <span style="font-size:11px;color:#98A2AD;font-weight:400;">{{ pi.sub }}</span>
+                <span style="font-size:11px;color:var(--text-mute);font-weight:400;">{{ pi.sub }}</span>
               </button>
             </sc-for>
           </div>
           <sc-if value="{{ pickerCancellable }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:#98A2AD;font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
+            <button onClick="{{ onCancel }}" style="margin-top:12px;border:none;background:none;color:var(--text-mute);font-size:12.5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Cancel</button>
           </sc-if>
         </div>
       </div>
@@ -336,22 +351,22 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
     <sc-if value="{{ showModel }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:10px;padding:22px 24px;width:420px;max-width:92vw;animation:fadeUp .25s ease-out;">
+        <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:420px;max-width:92vw;animation:fadeUp .25s ease-out;">
           <div style="display:flex;align-items:flex-start;gap:10px;">
             <div style="flex:1;">
               <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Predictive Model</div>
-              <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
+              <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
             </div>
-            <button onClick="{{ onCancel }}" title="Close without committing" style="border:none;background:#F2F4F6;color:#5C6670;border-radius:6px;width:26px;height:26px;line-height:1;font-size:13px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
+            <button onClick="{{ onCancel }}" title="Close without committing" style="border:none;background:var(--surface2);color:var(--text-sub);border-radius:6px;width:26px;height:26px;line-height:1;font-size:13px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ modelCards }}" as="mc" hint-placeholder-count="6">
-              <div style="display:flex;align-items:center;gap:9px;border:1px solid #E4E8EC;border-radius:6px;padding:7px 10px;background:#FAFBFC;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;width:16px;">{{ mc.pos }}</div>
+              <div style="display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;background:var(--surface2);">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-mute);width:16px;">{{ mc.pos }}</div>
                 <div style="width:9px;height:9px;border-radius:2px;background:{{ mc.hex }};"></div>
                 <div style="flex:1;font-size:13px;font-weight:600;">{{ mc.name }}</div>
-                <button onClick="{{ mc.up }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">&#9650;</button>
-                <button onClick="{{ mc.down }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">&#9660;</button>
+                <button onClick="{{ mc.up }}" style="border:1px solid var(--border);background:var(--panel);border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">&#9650;</button>
+                <button onClick="{{ mc.down }}" style="border:1px solid var(--border);background:var(--panel);border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">&#9660;</button>
               </div>
             </sc-for>
           </div>
@@ -362,18 +377,18 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
     <sc-if value="{{ showDraw }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.55);z-index:110;display:flex;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:12px;padding:26px 30px;width:440px;max-width:92vw;text-align:center;animation:fadeUp .25s ease-out;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#98A2AD;margin-bottom:14px;">END OF TURN &mdash; BRIEFING CARD {{ drawIdxLabel }} OF 2</div>
+        <div style="background:var(--panel);border-radius:12px;padding:26px 30px;width:440px;max-width:92vw;text-align:center;animation:fadeUp .25s ease-out;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--text-mute);margin-bottom:14px;">END OF TURN &mdash; BRIEFING CARD {{ drawIdxLabel }} OF 2</div>
           <sc-if value="{{ drawHidden }}" hint-placeholder-val="{{ true }}">
-            <div style="width:170px;height:110px;margin:0 auto 18px;border-radius:10px;background:repeating-linear-gradient(45deg,#E9EDF0,#E9EDF0 8px,#F4F6F8 8px,#F4F6F8 16px);border:1px solid #D4DAE0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;letter-spacing:2px;">CLASSIFIED</div>
+            <div style="width:170px;height:110px;margin:0 auto 18px;border-radius:10px;background:repeating-linear-gradient(45deg,#E9EDF0,#E9EDF0 8px,#F4F6F8 8px,#F4F6F8 16px);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-mute);letter-spacing:2px;">CLASSIFIED</div>
             <button onClick="{{ onReveal }}" style="background:#14181D;color:#fff;border:none;border-radius:7px;padding:12px 30px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reveal</button>
           </sc-if>
           <sc-if value="{{ drawShown }}" hint-placeholder-val="{{ false }}">
-            <div style="width:200px;margin:0 auto 16px;border-radius:10px;border:1px solid #D4DAE0;overflow:hidden;animation:popIn .4s ease-out;box-shadow:0 10px 30px rgba(20,24,29,.15);">
+            <div style="width:200px;margin:0 auto 16px;border-radius:10px;border:1px solid var(--border);overflow:hidden;animation:popIn .4s ease-out;box-shadow:0 10px 30px rgba(20,24,29,.15);">
               <div style="background:{{ drawHex }};color:#fff;padding:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;font-weight:700;">{{ drawKind }}</div>
               <div style="padding:16px 12px;font-size:17px;font-weight:700;">{{ drawTitle }}</div>
             </div>
-            <div style="font-size:12.5px;color:#5C6670;margin-bottom:16px;line-height:1.5;white-space:pre-line;">{{ drawDesc }}</div>
+            <div style="font-size:12.5px;color:var(--text-sub);margin-bottom:16px;line-height:1.5;white-space:pre-line;">{{ drawDesc }}</div>
             <sc-if value="{{ epidemicPending }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px;">
                 <sc-for list="{{ bubbleOffer }}" as="bo" hint-placeholder-count="0">
@@ -392,11 +407,73 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
     <sc-if value="{{ showEnd }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.7);z-index:200;display:flex;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:14px;padding:40px 44px;width:480px;max-width:92vw;text-align:center;animation:fadeUp .35s ease-out;">
+        <div style="background:var(--panel);border-radius:14px;padding:40px 44px;width:480px;max-width:92vw;text-align:center;animation:fadeUp .35s ease-out;">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:3px;color:{{ endHue }};font-weight:700;margin-bottom:10px;">{{ endKicker }}</div>
           <div style="font-size:28px;font-weight:700;margin-bottom:12px;">{{ endTitle }}</div>
-          <div style="font-size:14px;color:#5C6670;line-height:1.6;margin-bottom:24px;">{{ endBody }}</div>
+          <div style="font-size:14px;color:var(--text-sub);line-height:1.6;margin-bottom:24px;">{{ endBody }}</div>
           <button onClick="{{ onRestart }}" style="background:#14181D;color:#fff;border:none;border-radius:8px;padding:13px 34px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reconvene task force</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== menu dropdown ===== -->
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:150;" onClick="{{ onMenuToggle }}"></div>
+      <div style="position:fixed;top:56px;right:14px;z-index:151;min-width:190px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(20,24,29,.22);overflow:hidden;animation:fadeUp .18s ease-out;">
+        <button onClick="{{ onOpenSettings }}" style="{{ menuItemStyle }}" style-hover="background:var(--surface2);">Settings</button>
+        <button onClick="{{ onMenuRestart }}" style="{{ menuItemStyle }}" style-hover="background:var(--surface2);">Restart</button>
+        <button onClick="{{ onSaveGame }}" style="{{ menuItemStyle }}" style-hover="background:var(--surface2);">Save Game</button>
+      </div>
+    </sc-if>
+
+    <!-- ===== labs dropdown ===== -->
+    <sc-if value="{{ labsOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:150;" onClick="{{ onLabsToggle }}"></div>
+      <div style="position:fixed;top:56px;left:14px;z-index:151;min-width:190px;max-height:60vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(20,24,29,.22);animation:fadeUp .18s ease-out;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 12px 6px;">RESEARCH LABS &middot; {{ labsCount }}</div>
+        <sc-for list="{{ labsList }}" as="lb" hint-placeholder-count="1">
+          <button onClick="{{ lb.onClick }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;border-top:1px solid var(--border);background:var(--panel);color:var(--text);padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:var(--surface2);">
+            <div style="width:9px;height:9px;border-radius:2px;background:#06B6D4;flex-shrink:0;"></div>
+            <span style="flex:1;">{{ lb.name }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ===== settings modal ===== -->
+    <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:160;display:flex;align-items:center;justify-content:center;" onClick="{{ onCloseSettings }}">
+        <div style="background:var(--panel);border-radius:12px;padding:24px 26px;width:400px;max-width:92vw;animation:fadeUp .25s ease-out;box-shadow:0 20px 50px rgba(20,24,29,.3);" onClick="{{ stop }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+            <div style="flex:1;font-size:18px;font-weight:700;">Settings</div>
+            <button onClick="{{ onCloseSettings }}" style="border:none;background:var(--surface2);color:var(--text-sub);border-radius:6px;width:28px;height:28px;line-height:1;font-size:14px;cursor:pointer;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:600;">Dark mode</div>
+              <div style="font-size:11.5px;color:var(--text-mute);">Dim the situation room.</div>
+            </div>
+            <button onClick="{{ onToggleDark }}" title="Toggle dark mode" style="{{ darkToggleStyle }}">
+              <div style="{{ darkKnobStyle }}"></div>
+            </button>
+          </div>
+
+          <div style="padding:14px 0 12px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;font-size:13.5px;font-weight:600;">Player icon size</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-sub);">{{ pawnScaleLabel }}</div>
+            </div>
+            <input type="range" min="0.6" max="2" step="0.1" value="{{ pawnScale }}" onInput="{{ onPawnScale }}" style="{{ rangeStyle }}" />
+          </div>
+
+          <div style="padding:14px 0 4px;">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;font-size:13.5px;font-weight:600;">City pin size</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-sub);">{{ pinScaleLabel }}</div>
+            </div>
+            <input type="range" min="0.6" max="2" step="0.1" value="{{ pinScale }}" onInput="{{ onPinScale }}" style="{{ rangeStyle }}" />
+          </div>
         </div>
       </div>
     </sc-if>
@@ -409,13 +486,29 @@ class Component extends DCLogic {
     ready: false, screen: 'setup',
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
-    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null },
+    settings: { dark: false, pawnScale: 1, pinScale: 1 },
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false },
   };
 
   componentDidMount() {
     this._onResize = () => this.setState({ vw: window.innerWidth });
     window.addEventListener('resize', this._onResize);
+    this.applyTheme();
     import('./engine.js').then(E => { this.E = E; this.setState({ ready: true }); });
+  }
+
+  applyTheme() {
+    if (typeof document !== 'undefined') document.body.dataset.theme = this.state.settings.dark ? 'dark' : '';
+    this.applyMapTheme();
+  }
+  applyMapTheme() {
+    if (!this.chart || !this._polys || !window.am5) return;
+    const am5 = window.am5, dark = this.state.settings.dark;
+    this._polys.mapPolygons.template.setAll({
+      fill: am5.color(dark ? 0x1C232C : 0xE9EEF1),
+      stroke: am5.color(dark ? 0x0E1116 : 0xFFFFFF),
+    });
+    if (this._bgRect) this._bgRect.set('fill', am5.color(dark ? 0x0B1620 : 0xDDE6EB));
   }
   componentWillUnmount() {
     clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT); clearTimeout(this._newsT); clearTimeout(this._pingT); cancelAnimationFrame(this._flRaf);
@@ -460,8 +553,10 @@ class Component extends DCLogic {
       fill: am5.color(0xE9EEF1), stroke: am5.color(0xFFFFFF), strokeWidth: 0.8,
       interactive: false,
     });
-    chart.chartContainer.set('background', am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 }));
-    // NOTE: no am5map.ZoomControl â€” its canvas buttons get shadowed by the HTML
+    this._polys = polys;
+    this._bgRect = am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 });
+    chart.chartContainer.set('background', this._bgRect);
+    // NOTE: no am5map.ZoomControl — its canvas buttons get shadowed by the HTML
     // overlay's hit-testing. We drive zoom from HTML buttons + a wheel handler instead.
     const onView = () => {
       this.syncOverlay();
@@ -489,7 +584,16 @@ class Component extends DCLogic {
     }
     this.root = root;
     this.chart = chart;
+    this.applyMapTheme();
     this.forceUpdate();
+  }
+
+  zoomToCity(id) {
+    const c = this.chart, city = this.E.CITIES[id];
+    if (!c || !city) return;
+    this.setUi({ labsOpen: false });
+    c.zoomToGeoPoint({ longitude: city.lon, latitude: city.lat }, 5, true, 600);
+    this.pingCity(id);
   }
 
   geoToPx(lat, lon) { return this.chart.convert({ longitude: lon, latitude: lat }); }
@@ -684,7 +788,7 @@ class Component extends DCLogic {
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
     this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions';
-    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null } });
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false } });
   };
 
   // ---------- board ----------
@@ -715,7 +819,7 @@ class Component extends DCLogic {
       const path = this.bfs(g.players[pawnIdx].city, id);
       if (path) {
         const cost = path.length - 1;
-        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route â€” ${cost} actions` });
+        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route \u2014 ${cost} actions` });
         else if (!opts.length) return this.toast(`Too far overland: needs ${cost} actions, ${g.actionsLeft} left.`);
       }
     }
@@ -767,7 +871,7 @@ class Component extends DCLogic {
         type: 'picker', title: `Develop the ${E.STRAINS[chk.color].name} vaccine`,
         sub: `Turn in ${chk.need} matching samples. This cannot be undone (science rarely can).`,
         items: [{
-          hex: E.STRAINS[chk.color].hex, label: `Confirm â€” submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
+          hex: E.STRAINS[chk.color].hex, label: `Confirm \u2014 submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
           onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doCure(gg, chk.color, cards.map(c => c.uid))); },
         }],
       },
@@ -855,7 +959,32 @@ class Component extends DCLogic {
   cancelModal = () => this.setUi({ modal: null });
   stop = (e) => e.stopPropagation();
 
-  onRestart = () => this.setState({ screen: 'setup', g: null });
+  onRestart = () => this.setState({ screen: 'setup', g: null, ui: { ...this.state.ui, menuOpen: false, labsOpen: false, settingsOpen: false } });
+
+  // ---------- menu / settings ----------
+  onMenuToggle = () => this.setUi({ menuOpen: !this.state.ui.menuOpen, labsOpen: false });
+  onLabsToggle = () => this.setUi({ labsOpen: !this.state.ui.labsOpen, menuOpen: false });
+  onOpenSettings = () => this.setUi({ menuOpen: false, settingsOpen: true });
+  onCloseSettings = () => this.setUi({ settingsOpen: false });
+  onMenuRestart = () => this.onRestart();
+  onSaveGame = () => {
+    this.setUi({ menuOpen: false });
+    try {
+      const payload = { v: 1, savedAt: Date.now(), settings: this.state.settings, g: this.state.g };
+      localStorage.setItem('covid-game_save', JSON.stringify(payload));
+      this.toast('Game saved.');
+    } catch (e) {
+      this.toast('Save failed: storage unavailable.');
+    }
+  };
+  setSetting(patch) {
+    Object.assign(this.state.settings, patch);
+    this.setState({ settings: this.state.settings });
+    this.applyTheme();
+  }
+  onToggleDark = () => this.setSetting({ dark: !this.state.settings.dark });
+  onPawnScale = (e) => this.setSetting({ pawnScale: +e.target.value });
+  onPinScale = (e) => this.setSetting({ pinScale: +e.target.value });
 
   // =====================================================================
   renderVals() {
@@ -883,7 +1012,7 @@ class Component extends DCLogic {
     const diffLabels = { 4: 'Advisory', 5: 'Emergency', 6: 'Full panic' };
     v.epiOptions = [4, 5, 6].map(n => ({
       n, label: diffLabels[n],
-      style: `flex:1;border-radius:8px;padding:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;text-align:center;${setup.epidemics === n ? 'border:2px solid #0E9F8A;background:#F0FAF8;color:#0B7F6E;' : 'border:1px solid #D4DAE0;background:#FAFBFC;color:#5C6670;'}`,
+      style: `flex:1;border-radius:8px;padding:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;text-align:center;${setup.epidemics === n ? 'border:2px solid #0E9F8A;background:#F0FAF8;color:#0B7F6E;' : 'border:1px solid var(--border);background:var(--surface2);color:var(--text-sub);'}`,
       onPick: () => { setup.epidemics = n; this.setState({ setup }); },
     }));
     v.setupPlayers = setup.players.map((p, i) => ({
@@ -903,25 +1032,56 @@ class Component extends DCLogic {
     v.turn = g.turn;
     v.deckCount = g.playerDeck.length;
     v.outbreaks = g.outbreaks;
-    v.outbreakColor = E.INFECTION_RATES[g.ratePos] >= 3 ? '#B42318' : (g.outbreaks > 0 ? '#B54708' : '#14181D');
+    v.outbreakColor = E.INFECTION_RATES[g.ratePos] >= 3 ? '#B42318' : (g.outbreaks > 0 ? '#B54708' : 'var(--text)');
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
-      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE ✓' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
       return {
         name: s.name, status,
-        statusColor: g.cured[c] ? '#0E9F8A' : '#98A2AD',
-        title: `${s.name} â€” supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
-        chipStyle: `display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;border:1px solid #E4E8EC;border-radius:7px;padding:5px 10px;background:${g.cured[c] ? '#F0FAF8' : '#FAFBFC'};`,
+        statusColor: g.cured[c] ? '#0E9F8A' : 'var(--text-mute)',
+        title: `${s.name} \u2014 supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
+        chipStyle: `display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;border:1px solid var(--border);border-radius:7px;padding:5px 10px;background:${g.cured[c] ? '#F0FAF8' : 'var(--surface2)'};`,
         dotStyle: `width:11px;height:11px;border-radius:3px;background:${s.hex};`,
       };
     });
+
+    // labs legend chip + dropdown
+    const labCities = g.stations.slice();
+    v.labsCount = labCities.length;
+    v.labsCountText = `${labCities.length} built`;
+    v.labsOpen = ui.labsOpen;
+    v.labsChevron = ui.labsOpen ? '\u25B2' : '\u25BC';
+    v.labsChipStyle = `display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;border:1px solid ${ui.labsOpen ? '#06B6D4' : 'var(--border)'};border-radius:7px;padding:5px 10px;background:var(--surface2);cursor:pointer;`;
+    v.labsList = labCities.map(id => ({ name: E.CITIES[id].name, onClick: () => this.zoomToCity(id) }));
+    v.onLabsToggle = this.onLabsToggle;
+
+    // hamburger menu + settings
+    v.menuOpen = ui.menuOpen;
+    v.onMenuToggle = this.onMenuToggle;
+    v.onOpenSettings = this.onOpenSettings;
+    v.onMenuRestart = this.onMenuRestart;
+    v.onSaveGame = this.onSaveGame;
+    v.menuBtnStyle = "display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;width:38px;height:38px;flex-shrink:0;border:1px solid var(--border);background:var(--panel);border-radius:8px;cursor:pointer;padding:0;";
+    v.menuItemStyle = "display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--border);background:var(--panel);color:var(--text);padding:11px 15px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;";
+    v.showSettings = ui.settingsOpen;
+    v.onCloseSettings = this.onCloseSettings;
+    v.onToggleDark = this.onToggleDark;
+    v.onPawnScale = this.onPawnScale; v.onPinScale = this.onPinScale;
+    const dark = this.state.settings.dark;
+    v.pawnScale = this.state.settings.pawnScale;
+    v.pinScale = this.state.settings.pinScale;
+    v.pawnScaleLabel = `${Math.round(this.state.settings.pawnScale * 100)}%`;
+    v.pinScaleLabel = `${Math.round(this.state.settings.pinScale * 100)}%`;
+    v.darkToggleStyle = `width:46px;height:26px;border-radius:13px;border:none;cursor:pointer;padding:0;position:relative;transition:background .2s ease;background:${dark ? '#0E9F8A' : 'var(--border)'};`;
+    v.darkKnobStyle = `position:absolute;top:3px;left:${dark ? '23px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s ease;box-shadow:0 1px 3px rgba(20,24,29,.3);`;
+    v.rangeStyle = "width:100%;accent-color:#0E9F8A;cursor:pointer;";
     v.rateCells = E.INFECTION_RATES.map((r, i) => ({
       v: r,
-      style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:#EDF0F2;color:#98A2AD;'}`,
+      style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:var(--surface2);color:var(--text-mute);'}`,
     }));
 
-    // board â€” project cities through the amCharts map
+    // board — project cities through the amCharts map
     v.mapRef = this.mapRef;
     v.overlayRef = this.overlayRef;
     const mobile = (this.state.vw ?? window.innerWidth) < 760;
@@ -929,26 +1089,26 @@ class Component extends DCLogic {
     const open = ui.panelOpen;
     v.togglePanel = () => this.setUi({ panelOpen: !open });
     if (mobile) {
-      v.topBarStyle = "background:#FFFFFF;border-bottom:1px solid #E4E8EC;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;flex-shrink:0;";
+      v.topBarStyle = "background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;flex-shrink:0;";
       v.dividerStyle = "display:none;";
       v.strainRowStyle = "display:flex;gap:6px;width:100%;overflow-x:auto;order:9;";
       v.spacerStyle = "display:none;";
       v.mainStyle = "flex:1;display:flex;flex-direction:column;min-height:0;position:relative;";
-      v.panelStyle = `height:${open ? '52vh' : '0px'};width:100%;flex-shrink:0;background:#FFFFFF;border-top:1px solid #E4E8EC;transition:height .28s ease;overflow:hidden;min-height:0;`;
+      v.panelStyle = `height:${open ? '52vh' : '0px'};width:100%;flex-shrink:0;background:var(--panel);border-top:1px solid var(--border);transition:height .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:100%;height:52vh;display:flex;flex-direction:column;min-height:0;";
       const tw = isTouch ? 168 : 84, th = isTouch ? 48 : 24, tf = isTouch ? 24 : 12;
-      v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:${tw}px;height:${th}px;border:1px solid #E4E8EC;border-bottom:none;border-radius:8px 8px 0 0;background:#FFFFFF;cursor:pointer;transition:bottom .28s ease;color:#5C6670;font-size:${tf}px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
+      v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:${tw}px;height:${th}px;border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;background:var(--panel);cursor:pointer;transition:bottom .28s ease;color:var(--text-sub);font-size:${tf}px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
       v.panelChevron = open ? '\u25BE' : '\u25B4';
     } else {
-      v.topBarStyle = "height:58px;background:#FFFFFF;border-bottom:1px solid #E4E8EC;display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;";
-      v.dividerStyle = "width:1px;height:32px;background:#E4E8EC;";
+      v.topBarStyle = "height:58px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;";
+      v.dividerStyle = "width:1px;height:32px;background:var(--border);";
       v.strainRowStyle = "display:flex;gap:8px;";
       v.spacerStyle = "flex:1;";
       v.mainStyle = "flex:1;display:flex;min-height:0;position:relative;";
-      v.panelStyle = `width:${open ? 390 : 0}px;flex-shrink:0;background:#FFFFFF;border-left:1px solid #E4E8EC;transition:width .28s ease;overflow:hidden;min-height:0;`;
+      v.panelStyle = `width:${open ? 390 : 0}px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);transition:width .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:390px;height:100%;display:flex;flex-direction:column;min-height:0;";
       const tw = isTouch ? 44 : 22, th = isTouch ? 128 : 64, tf = isTouch ? 22 : 11;
-      v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:${tw}px;height:${th}px;border:1px solid #E4E8EC;border-right:none;border-radius:8px 0 0 8px;background:#FFFFFF;cursor:pointer;transition:right .28s ease;color:#5C6670;font-size:${tf}px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
+      v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:${tw}px;height:${th}px;border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;background:var(--panel);cursor:pointer;transition:right .28s ease;color:var(--text-sub);font-size:${tf}px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
       v.panelChevron = open ? '\u25B8' : '\u25C2';
     }
     const map = this.chart;
@@ -966,7 +1126,7 @@ class Component extends DCLogic {
       for (const [a, b] of E.EDGES) {
         const ca = E.CITIES[a], cb = E.CITIES[b];
         if (Math.abs(ca.lon - cb.lon) > 180) {
-          // crosses the antimeridian â€” split at Â±180 with interpolated latitude
+          // crosses the antimeridian — split at ±180 with interpolated latitude
           const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
           const span = (w.lon + 360) - e2.lon;
           const latAt180 = e2.lat + (w.lat - e2.lat) * ((180 - e2.lon) / span);
@@ -992,18 +1152,26 @@ class Component extends DCLogic {
       const adj = E.ADJ[pawnCity].includes(id);
       let domHex = null, domN = 0;
       for (const col of E.COLORS) if (g.cubes[id][col] > domN) { domN = g.cubes[id][col]; domHex = E.STRAINS[col].hex; }
-      const fill = isStation ? '#14181D' : (domHex || '#fff');
-      let dot = `width:13px;height:13px;border-radius:${isStation ? '3px' : '50%'};background:${fill};border:3px solid ${isStation && domHex ? domHex : E.STRAINS[c.color].hex};flex-shrink:0;pointer-events:auto;cursor:pointer;`;
+      const fill = isStation ? '#06B6D4' : (domHex || '#fff');
+      const pinScale = this.state.settings.pinScale || 1;
+      const pawnScale = this.state.settings.pawnScale || 1;
+      const pinSz = Math.round(13 * pinScale);
+      let dot = `width:${pinSz}px;height:${pinSz}px;border-radius:${isStation ? '3px' : '50%'};background:${fill};border:3px solid ${isStation && domHex ? domHex : E.STRAINS[c.color].hex};flex-shrink:0;pointer-events:auto;cursor:pointer;`;
       if (isHere) dot += 'animation:pulseRing 1.6s infinite;';
       else if (targeting) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.3);';
       else if (g.masked[id]) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.55);';
       else if (g.noTreat[id]) dot += 'box-shadow:0 0 0 3px rgba(180,35,24,.55);';
       else if (adj && g.phase === 'actions') dot += 'box-shadow:0 0 0 3px rgba(20,24,29,.12);';
+      const pawnSz = Math.round(11 * pawnScale);
+      const pawnFs = Math.max(6, Math.round(7 * pawnScale));
       return {
         id, x: p.x, y: p.y, name: c.name,
         label: (isStation ? '\u25A3 ' : '') + c.name,
         showLabel: showLabels, dotStyle: dot, cubes,
-        pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
+        pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({
+          num: q.i + 1, name: q.name,
+          style: `width:${pawnSz}px;height:${pawnSz}px;border-radius:50%;background:${E.ROLES[q.role].hex};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(20,24,29,.35);color:#fff;font-size:${pawnFs}px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;flex-shrink:0;`,
+        })),
         onClick: () => this.onCity(id),
       };
     });
@@ -1040,15 +1208,15 @@ class Component extends DCLogic {
     v.curCity = E.CITIES[cur.city].name;
     v.curBadgeStyle = `width:30px;height:30px;border-radius:50%;background:${E.ROLES[cur.role].hex};color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;`;
     v.actionPips = [0, 1, 2, 3].map(i => ({
-      style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:#E4E8EC;'}`,
+      style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:var(--border);'}`,
     }));
     v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
-    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} · ${p.name}` }));
     v.actPawnValue = ui.actPawn;
 
     // action buttons
     const acting = g.phase === 'actions';
-    const btn = (enabled, accentHex) => `border:1px solid ${enabled ? (accentHex || '#14181D') : '#E4E8EC'};background:${enabled ? '#fff' : '#F7F8F9'};color:${enabled ? (accentHex || '#14181D') : '#B9C2CA'};border-radius:6px;padding:7px 11px;font-size:12.5px;font-weight:600;cursor:${enabled ? 'pointer' : 'default'};font-family:'IBM Plex Sans',sans-serif;`;
+    const btn = (enabled, accentHex) => `border:1px solid ${enabled ? (accentHex || 'var(--text)') : 'var(--border)'};background:${enabled ? 'var(--panel)' : 'var(--surface2)'};color:${enabled ? (accentHex || 'var(--text)') : '#B9C2CA'};border-radius:6px;padding:7px 11px;font-size:12.5px;font-weight:600;cursor:${enabled ? 'pointer' : 'default'};font-family:'IBM Plex Sans',sans-serif;`;
     v.treatBtns = acting ? E.canTreat(g).map(col => ({
       label: `Treat ${E.STRAINS[col].name} (${g.cubes[cur.city][col]})`,
       disabled: false, style: btn(true, E.STRAINS[col].hex),
@@ -1060,11 +1228,11 @@ class Component extends DCLogic {
     v.cureDisabled = !cchk.ok; v.cureWhy = cchk.why || ''; v.cureStyle = btn(cchk.ok, '#0E9F8A');
     const sOpts = acting ? E.shareOptions(g) : [];
     v.shareDisabled = !sOpts.length; v.shareWhy = sOpts.length ? '' : 'Requires another official in your city with a matching file'; v.shareStyle = btn(sOpts.length > 0);
-    v.passDisabled = !acting; v.passStyle = btn(acting, '#98A2AD');
+    v.passDisabled = !acting; v.passStyle = btn(acting, 'var(--text-mute)');
 
     // hand
     v.handCount = cur.hand.length;
-    const cardRow = `display:flex;align-items:center;gap:8px;border:1px solid #E4E8EC;border-radius:6px;padding:6px 9px;background:#FAFBFC;`;
+    const cardRow = `display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:6px;padding:6px 9px;background:var(--surface2);`;
     v.hand = cur.hand.map(c => c.type === 'city' ? {
       style: cardRow, hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name, tag: E.STRAINS[c.color].name, playable: false,
     } : {
@@ -1080,14 +1248,14 @@ class Component extends DCLogic {
     })) : [];
 
     // log
-    const logColors = { bad: '#B42318', good: '#0B7F6E', infect: '#B54708', event: '#5B5BD6', move: '#5C6670', draw: '#5C6670', sys: '#98A2AD' };
+    const logColors = { bad: '#B42318', good: '#0B7F6E', infect: '#B54708', event: '#5B5BD6', move: 'var(--text-sub)', draw: 'var(--text-sub)', sys: 'var(--text-mute)' };
     v.logEntries = g.log.slice(0, 120).map(e => {
       const who = g.players.find(p => p.name && e.text.includes(p.name));
       const hex = who ? E.ROLES[who.role].hex : null;
       return {
         text: e.text,
-        color: hex || logColors[e.kind] || '#5C6670',
-        bar: hex || (e.kind === 'bad' ? '#B42318' : e.kind === 'good' ? '#0E9F8A' : '#E4E8EC'),
+        color: hex || logColors[e.kind] || 'var(--text-sub)',
+        bar: hex || (e.kind === 'bad' ? '#B42318' : e.kind === 'good' ? '#0E9F8A' : 'var(--border)'),
       };
     });
 
@@ -1098,7 +1266,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding â€” click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet â€” click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol â€” click a city to clear & shield it' : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding \u2014 click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet \u2014 click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol — click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
     const queue = ui.newsQueue || [];
     v.showNews = queue.length > 0;
@@ -1205,4 +1373,3 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
-
