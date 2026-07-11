@@ -30,7 +30,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
   <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
     <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;">
       <div style="width:640px;max-width:94vw;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR · v2.6</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR · v2.7</div>
         <h1 style="margin:8px 0 4px;font-size:34px;font-weight:700;letter-spacing:-0.5px;">COVID: The Game</h1>
         <div style="font-size:13.5px;color:#5C6670;margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2–4 officials. Any resemblance to actual events is entirely the point.</div>
 
@@ -127,12 +127,18 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <sc-for list="{{ lines }}" as="l" hint-placeholder-count="10">
               <line x1="{{ l.x1 }}" y1="{{ l.y1 }}" x2="{{ l.x2 }}" y2="{{ l.y2 }}" stroke="#5C7385" stroke-width="1" stroke-dasharray="4 4" opacity="0.55"></line>
             </sc-for>
+            <sc-if value="{{ showFlight }}" hint-placeholder-val="{{ false }}">
+              <path d="{{ flightPathD }}" fill="none" stroke="{{ flightHex }}" stroke-width="1.5" stroke-dasharray="3 5" opacity="0.75"></path>
+            </sc-if>
           </svg>
           <sc-for list="{{ fx }}" as="f" hint-placeholder-count="0">
             <div style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;width:{{ f.size }}px;height:{{ f.size }}px;border-radius:50%;border:3px solid {{ f.hex }};pointer-events:none;animation:ripple 1.3s ease-out forwards;z-index:5;"></div>
           </sc-for>
           <sc-if value="{{ showTravel }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;width:15px;height:15px;border-radius:50%;background:{{ travelHex }};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,29,.45);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;pointer-events:none;">{{ travelNum }}</div>
+          </sc-if>
+          <sc-if value="{{ showFlight }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:{{ flightX }}px;top:{{ flightY }}px;transform:translate(-50%,-50%) rotate({{ flightRot }}deg);z-index:31;pointer-events:none;font-size:18px;color:{{ flightHex }};text-shadow:0 1px 3px rgba(20,24,29,.4);line-height:1;">✈</div>
           </sc-if>
           <sc-for list="{{ cityNodes }}" as="c" hint-placeholder-count="12">
             <div onClick="{{ c.onClick }}" title="{{ c.name }}" style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;width:0;overflow:visible;pointer-events:auto;">
@@ -374,7 +380,7 @@ class Component extends DCLogic {
     ready: false, screen: 'setup',
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
-    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null },
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null },
   };
 
   componentDidMount() {
@@ -383,7 +389,7 @@ class Component extends DCLogic {
     import('./engine.js').then(E => { this.E = E; this.setState({ ready: true }); });
   }
   componentWillUnmount() {
-    clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT);
+    clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT); cancelAnimationFrame(this._flRaf);
     window.removeEventListener('resize', this._onResize);
     if (this._ro) this._ro.disconnect();
     if (this.root) { this.root.dispose(); this.root = null; this.chart = null; }
@@ -503,6 +509,24 @@ class Component extends DCLogic {
     return null;
   }
 
+  startFlight(pawn, from, to, apply) {
+    if (from === to) return apply();
+    const E = this.E, g = this.state.g;
+    const dur = 1100;
+    this.setUi({ flight: { pawn, from, to, t: 0, num: pawn + 1, hex: E.ROLES[g.players[pawn].role].hex } });
+    const t0 = performance.now();
+    cancelAnimationFrame(this._flRaf);
+    const step = (now) => {
+      const f = this.state.ui.flight;
+      if (!f) return;
+      f.t = Math.min(1, (now - t0) / dur);
+      if (f.t >= 1) { this.setUi({ flight: null }); apply(); return; }
+      this.forceUpdate();
+      this._flRaf = requestAnimationFrame(step);
+    };
+    this._flRaf = requestAnimationFrame(step);
+  }
+
   startRoute(pawn, path, cost) {
     const E = this.E, g = this.state.g;
     this.setUi({ travel: { pawn, city: path[0], num: pawn + 1, hex: E.ROLES[g.players[pawn].role].hex } });
@@ -562,7 +586,7 @@ class Component extends DCLogic {
     const E = this.E;
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
-    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null } });
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null } });
   };
 
   // ---------- board ----------
@@ -579,11 +603,11 @@ class Component extends DCLogic {
         this.mut(gg => E.eventFunding(gg, m.player, id));
       } else if (m.type === 'jet') {
         this.setUi({ mode: null });
-        this.mut(gg => E.eventJet(gg, m.player, m.pawn, id));
+        this.startFlight(m.pawn, g.players[m.pawn].city, id, () => this.mut(gg => E.eventJet(gg, m.player, m.pawn, id)));
       }
       return;
     }
-    if (g.phase !== 'actions' || ui.travel) return;
+    if (g.phase !== 'actions' || ui.travel || ui.flight) return;
     const pawnIdx = g.players[g.current].role === 'logistics' ? ui.actPawn : g.current;
     const opts = E.moveOptions(g, pawnIdx, id);
     if (!opts.some(o => o.how === 'drive')) {
@@ -607,6 +631,11 @@ class Component extends DCLogic {
       this.startRoute(m.pawn, opt.path, opt.cost);
       return;
     }
+    if (opt.how === 'direct' || opt.how === 'charter') {
+      this.setUi({ modal: null });
+      this.startFlight(m.pawn, g.players[m.pawn].city, m.dest, () => this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt)));
+      return;
+    }
     if (opt.how === 'engineerFly') {
       const cards = g.players[g.current].hand.filter(c => c.type === 'city');
       this.setUi({
@@ -614,7 +643,7 @@ class Component extends DCLogic {
           type: 'picker', title: 'Engineer dispatch', sub: `Discard any city card to fly to ${E.CITIES[m.dest].name}.`,
           items: cards.map(c => ({
             hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name, sub: E.STRAINS[c.color].name,
-            onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt, c.uid)); },
+            onClick: () => { this.setUi({ modal: null }); this.startFlight(m.pawn, g.players[m.pawn].city, m.dest, () => this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt, c.uid))); },
           })),
         },
       });
@@ -860,7 +889,7 @@ class Component extends DCLogic {
         id, x: p.x, y: p.y, name: c.name,
         label: (isStation ? '▣ ' : '') + c.name,
         showLabel: showLabels, dotStyle: dot, cubes,
-        pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i)).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
+        pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
         onClick: () => this.onCity(id),
       };
     });
@@ -868,6 +897,22 @@ class Component extends DCLogic {
       const p = px[f.city];
       return { x: p.x, y: p.y, hex: f.type === 'treat' ? '#0E9F8A' : f.type === 'build' ? '#14181D' : E.STRAINS[f.color]?.hex || '#14181D', size: f.type === 'outbreak' ? 64 : 30 };
     });
+    v.showFlight = !!(map && ui.flight);
+    if (v.showFlight) {
+      const f = ui.flight;
+      const p0 = px[f.from], p1 = px[f.to];
+      const dist = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+      const cx = (p0.x + p1.x) / 2, cy = (p0.y + p1.y) / 2 - Math.min(90, dist * 0.22);
+      const t = f.t, e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const bez = (a, b, c2) => (1 - e) * (1 - e) * a + 2 * (1 - e) * e * b + e * e * c2;
+      v.flightX = bez(p0.x, cx, p1.x);
+      v.flightY = bez(p0.y, cy, p1.y);
+      const dxdt = 2 * (1 - e) * (cx - p0.x) + 2 * e * (p1.x - cx);
+      const dydt = 2 * (1 - e) * (cy - p0.y) + 2 * e * (p1.y - cy);
+      v.flightRot = Math.atan2(dydt, dxdt) * 180 / Math.PI;
+      v.flightHex = f.hex;
+      v.flightPathD = `M ${p0.x} ${p0.y} Q ${cx} ${cy} ${p1.x} ${p1.y}`;
+    }
     v.showTravel = !!(map && ui.travel);
     if (v.showTravel) {
       const tp = px[ui.travel.city];
