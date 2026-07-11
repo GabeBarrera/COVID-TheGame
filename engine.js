@@ -344,6 +344,15 @@ export function doMove(g, pawnIdx, dest, opt, chosenUid) {
   movePawn(g, pawnIdx, dest, labels[opt.how], discard);
 }
 
+// one hop of a multi-city overland route (animated by the UI); logs once at the end
+export function doRouteHop(g, pawnIdx, dest, isLast, routeLen) {
+  const p = g.players[pawnIdx];
+  p.city = dest;
+  medicSweep(g, p);
+  if (isLast) log(g, 'move', `${p.name} travels overland to ${CITIES[dest].name} (${routeLen} action${routeLen > 1 ? 's' : ''}).`);
+  spend(g);
+}
+
 export function canTreat(g) {
   const p = g.players[g.current];
   return COLORS.filter(c => g.cubes[p.city][c] > 0);
