@@ -134,6 +134,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           <sc-for list="{{ fx }}" as="f" hint-placeholder-count="0">
             <div style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;width:{{ f.size }}px;height:{{ f.size }}px;border-radius:50%;border:3px solid {{ f.hex }};pointer-events:none;animation:ripple 1.3s ease-out forwards;z-index:5;"></div>
           </sc-for>
+          <sc-if value="{{ showPing }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:{{ pingX }}px;top:{{ pingY }}px;width:26px;height:26px;border-radius:50%;border:3px solid #14181D;pointer-events:none;animation:ripple 1.4s ease-out forwards;z-index:6;"></div>
+          </sc-if>
           <sc-if value="{{ showTravel }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;width:15px;height:15px;border-radius:50%;background:{{ travelHex }};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,29,.45);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;pointer-events:none;">{{ travelNum }}</div>
           </sc-if>
@@ -183,6 +186,21 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
         <!-- toast -->
         <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#14181D;color:#fff;border-radius:7px;padding:9px 16px;font-size:12.5px;z-index:40;animation:fadeUp .25s ease-out;">{{ toastText }}</div>
+        </sc-if>
+
+        <!-- satirical news headline queue -->
+        <sc-if value="{{ showNews }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;bottom:16px;left:16px;z-index:45;max-width:min(360px,72vw);background:#FFFFFF;border:1px solid #E4E8EC;border-left:4px solid {{ newsHex }};border-radius:8px;box-shadow:0 10px 30px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
+            <div style="display:flex;align-items:center;gap:8px;background:#B42318;color:#fff;padding:5px 10px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1s infinite;flex-shrink:0;"></div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:2px;font-weight:700;flex:1;">BREAKING · {{ newsCity }}</div>
+              <sc-if value="{{ showNewsMore }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;background:rgba(255,255,255,.22);border-radius:4px;padding:1px 5px;">{{ newsMoreLabel }}</div>
+              </sc-if>
+              <button onClick="{{ onNewsClose }}" title="Dismiss" style="border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:4px;width:18px;height:18px;line-height:1;font-size:11px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+            </div>
+            <div style="padding:9px 12px 10px;font-size:13px;font-weight:600;line-height:1.4;text-wrap:pretty;">{{ newsText }}</div>
+          </div>
         </sc-if>
       </div>
 
@@ -313,8 +331,13 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     <sc-if value="{{ showModel }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:10px;padding:22px 24px;width:420px;max-width:92vw;animation:fadeUp .25s ease-out;">
-          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Predictive Model</div>
-          <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="flex:1;">
+              <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Predictive Model</div>
+              <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
+            </div>
+            <button onClick="{{ onCancel }}" title="Close without committing" style="border:none;background:#F2F4F6;color:#5C6670;border-radius:6px;width:26px;height:26px;line-height:1;font-size:13px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+          </div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ modelCards }}" as="mc" hint-placeholder-count="6">
               <div style="display:flex;align-items:center;gap:9px;border:1px solid #E4E8EC;border-radius:6px;padding:7px 10px;background:#FAFBFC;">
@@ -380,7 +403,7 @@ class Component extends DCLogic {
     ready: false, screen: 'setup',
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
-    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null },
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null },
   };
 
   componentDidMount() {
@@ -389,7 +412,7 @@ class Component extends DCLogic {
     import('./engine.js').then(E => { this.E = E; this.setState({ ready: true }); });
   }
   componentWillUnmount() {
-    clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT); cancelAnimationFrame(this._flRaf);
+    clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT); clearTimeout(this._newsT); clearTimeout(this._pingT); cancelAnimationFrame(this._flRaf);
     window.removeEventListener('resize', this._onResize);
     if (this._ro) this._ro.disconnect();
     if (this.root) { this.root.dispose(); this.root = null; this.chart = null; }
@@ -547,6 +570,7 @@ class Component extends DCLogic {
     if (g.current !== ui.lastCurrent) { ui.lastCurrent = g.current; ui.actPawn = g.current; }
     if (g.phase === 'infect') this.scheduleInfect();
     this.scheduleFxCleanup(g);
+    this.syncNews();
     this.setState({ g, ui });
   }
 
@@ -559,6 +583,7 @@ class Component extends DCLogic {
       this.scheduleFxCleanup(g);
       if (g.phase !== 'infect') { clearInterval(this._it); this._it = null; }
       this.setState({ g });
+      this.syncNews();
     }, this.infectMs());
   }
   infectMs() { return this.props.infectSpeedMs ?? 950; }
@@ -581,12 +606,40 @@ class Component extends DCLogic {
 
   setUi(patch) { Object.assign(this.state.ui, patch); this.setState({ ui: this.state.ui }); }
 
+  syncNews() {
+    const g = this.state.g;
+    if (!g) return;
+    // clear only when the player explicitly ends their turn (enters the draw phase)
+    if (this._lastPhase !== 'draw' && g.phase === 'draw') this.state.ui.newsQueue = [];
+    this._lastPhase = g.phase;
+    if (g.news && g.news.id !== this._newsId) {
+      this._newsId = g.news.id;
+      this.state.ui.newsQueue = [...(this.state.ui.newsQueue || []), g.news].slice(-24);
+    }
+    this.setState({ ui: this.state.ui });
+  }
+
+  closeNews = (e) => {
+    if (e) e.stopPropagation();
+    const q = this.state.ui.newsQueue || [];
+    this.state.ui.newsQueue = q.slice(0, -1);
+    this.setState({ ui: this.state.ui });
+  };
+
+  pingCity(city) {
+    this.state.ui.ping = { city, id: Date.now() };
+    this.setState({ ui: this.state.ui });
+    clearTimeout(this._pingT);
+    this._pingT = setTimeout(() => { this.state.ui.ping = null; this.setState({ ui: this.state.ui }); }, 1400);
+  }
+
   // ---------- setup ----------
   startGame = () => {
     const E = this.E;
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
-    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null } });
+    this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions';
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null } });
   };
 
   // ---------- board ----------
@@ -803,7 +856,7 @@ class Component extends DCLogic {
     v.turn = g.turn;
     v.deckCount = g.playerDeck.length;
     v.outbreaks = g.outbreaks;
-    v.outbreakColor = g.outbreaks >= 6 ? '#B42318' : g.outbreaks >= 4 ? '#B54708' : '#14181D';
+    v.outbreakColor = E.INFECTION_RATES[g.ratePos] >= 3 ? '#B42318' : (g.outbreaks > 0 ? '#B54708' : '#14181D');
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
@@ -997,6 +1050,20 @@ class Component extends DCLogic {
     v.showTarget = targeting;
     v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding — click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet — click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol — click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
+    const queue = ui.newsQueue || [];
+    v.showNews = queue.length > 0;
+    if (v.showNews) {
+      const cur = queue[queue.length - 1];
+      v.newsText = cur.text;
+      v.newsHex = E.STRAINS[cur.color]?.hex || '#B42318';
+      v.newsCity = E.CITIES[cur.city].name;
+      v.showNewsMore = queue.length > 1;
+      v.newsMoreLabel = `+${queue.length - 1} earlier`;
+      v.onNewsClose = this.closeNews;
+      v.onNewsPing = () => this.pingCity(cur.city);
+    }
+    v.showPing = !!(map && ui.ping);
+    if (v.showPing) { const pp = px[ui.ping.city]; v.pingX = pp.x; v.pingY = pp.y; }
 
     // modals
     const modal = ui.modal;

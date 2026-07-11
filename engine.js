@@ -184,6 +184,7 @@ export function newGame(playerDefs, epidemics) {
     epidemics, epidemicsDrawn: 0,
     lockdownArmed: false,
     masked: {}, noTreat: {},
+    news: null, newsSeq: 0,
     engineerFlightUsed: false,
     log: [], effects: [], effectSeq: 0,
     lossReason: null,
@@ -256,6 +257,7 @@ export function addCubes(g, city, color, n, chain) {
     g.cubes[city][color]++;
   }
   effect(g, 'infect', city, color);
+  g.news = { id: g.newsSeq++, city, color, text: newsHeadline(city) };
 }
 
 function outbreak(g, city, color, chain) {
@@ -649,4 +651,73 @@ export function eventAntiVax(g, playerIdx) {
   effect(g, 'outbreak', city, color);
   log(g, 'event', `Anti-Vaxxers Unite in ${CITIES[city].name}: +1 ${STRAINS[color].name} cube, no treatment for 1 turn. They did their own research.`);
   addCubes(g, city, color, 1, new Set());
+}
+
+// ---- Satirical infection headlines (comedy only, no gameplay effect) ----
+const CITY_NEWS = {
+  seattle: ['Seattle cluster traced to one shared oat-milk frother.', 'Outbreak spreads through a 4-hour line for a new coffee drop.'],
+  sanfrancisco: ['SF founders pivot the virus into a Series A.', 'Bay Area outbreak blamed on a networking mixer nobody wanted to attend.'],
+  denver: ['Denver cases linked to sharing a single water bottle up a 14er.', 'Mile-high altitude declared "basically a symptom" by locals.'],
+  chicago: ['Chicago spread confirmed at a deep-dish debate that got physical.', 'Wind carried it, insists Chicago; the wind declined to comment.'],
+  toronto: ['Toronto outbreak: everyone apologized while infecting each other.', 'Cases spike after a very polite hockey brawl.'],
+  newyork: ['NYC cluster traced to one subway pole touched by all 8 million.', 'New Yorkers walk faster to outrun the virus. It keeps pace.'],
+  washington: ['Washington forms a task force to study the previous task force.', 'D.C. outbreak stalled in committee.'],
+  london: ['London cases blamed on a Tube carriage with the windows painted shut.', 'Brits queue for the virus; it is deemed "quite orderly".'],
+  paris: ['Paris outbreak spreads via aggressive cheek-kissing at brunch.', 'Virus goes on strike, then infects everyone anyway.'],
+  berlin: ['Berlin cluster traced to a techno club that never closes.', 'Outbreak paused by 90 minutes of paperwork, then resumed.'],
+  rome: ['Rome cases linked to fourteen people sharing one Vespa.', 'Ancient aqueduct now also carrying the virus, historians note.'],
+  moscow: ['Moscow blames the outbreak on the weather, the West, and Tuesday.', 'Cases officially "not happening," unofficially happening a lot.'],
+  mexicocity: ['Mexico City outbreak traced to a taco stand with a devoted following.', 'Virus stuck in traffic for six hours, still made it across town.'],
+  miami: ['Miami cluster forms at a pool party that refused to end.', 'Cases spike; everyone insists they were "just visiting".'],
+  bogota: ['Bogota outbreak blamed on strong coffee bringing everyone out at once.', 'Cases climb to altitude and keep going.'],
+  lima: ['Lima cases traced to a ceviche cook-off with no hand-washing rule.', 'Coastal fog blamed; the fog remains at large.'],
+  saopaulo: ['Sao Paulo outbreak spreads through a stadium of 60,000 hugging strangers.', 'Traffic jam becomes a mobile superspreader event.'],
+  buenosaires: ['Buenos Aires cluster traced to a tango class held far too close.', 'Cases blamed on staying up until 4am debating football.'],
+  casablanca: ['Casablanca outbreak: of all the cities in the world, it walked into this one.', 'Cases linked to a very crowded, very charming cafe.'],
+  lagos: ['Lagos cluster forms in a traffic jam that has lasted three days.', 'Outbreak spread through a wedding of 2,000 close friends.'],
+  kinshasa: ['Kinshasa cases traced to a riverboat karaoke night.', 'Virus reportedly enjoyed the music, stayed for the encore.'],
+  nairobi: ['Nairobi outbreak blamed on a matatu packed past physics.', 'Cases spike after a safari group clustered for the same photo.'],
+  johannesburg: ['Johannesburg cluster traced to a braai that invited the whole street.', 'Cases linked to load-shedding forcing everyone into one lit room.'],
+  khartoum: ['Khartoum outbreak spreads at a tea stall where nobody keeps distance.', 'Where the two Niles meet, so did the virus.'],
+  istanbul: ['Istanbul cases spread across two continents before lunch.', 'Outbreak traced to a ferry where everyone shared the same simit.'],
+  cairo: ['Cairo cluster blamed on a bazaar haggle that got heated.', 'Virus older than the pyramids, claims one confident vendor.'],
+  riyadh: ['Riyadh outbreak traced to a mall food court at peak hour.', 'Cases climb with the temperature, locals unbothered.'],
+  baghdad: ['Baghdad cases linked to a poetry night that ran long and loud.', 'Outbreak blamed on hospitality nobody could politely refuse.'],
+  tehran: ['Tehran cluster forms in a taxi meant for four, holding nine.', 'Cases spread over endless refills of tea.'],
+  dubai: ['Dubai outbreak traced to the world\'s tallest, most crowded elevator.', 'Virus upgraded to business class, infected the lounge.'],
+  karachi: ['Karachi cases spread through a biryani queue of legendary length.', 'Outbreak stuck in traffic, arrives fashionably infectious.'],
+  mumbai: ['Mumbai cluster traced to a local train packed beyond imagination.', 'Monsoon puddle blamed; the puddle is now a lake.'],
+  delhi: ['Delhi outbreak blamed on smog, then on a wedding, then on the smog again.', 'Cases spread across a market where personal space is theoretical.'],
+  chennai: ['Chennai cases linked to a filter-coffee stand with a cult following.', 'Outbreak survives 40C heat purely out of spite.'],
+  kolkata: ['Kolkata cluster forms during a five-hour adda that no one left.', 'Cases spread through shared sweets nobody could resist.'],
+  dhaka: ['Dhaka outbreak traced to a rickshaw jam of biblical proportions.', 'Cases spike where the whole city fits on one street.'],
+  beijing: ['Beijing cases blamed on a hotpot dinner of twenty dipping in one pot.', 'Outbreak stuck behind the Great Wall of commuters.'],
+  seoul: ['Seoul cluster traced to a karaoke room booked around the clock.', 'Cases spread through a 3am fried-chicken-and-beer summit.'],
+  tokyo: ['Tokyo outbreak forms on the world\'s most punctual, most packed train.', 'Cases spread politely, with a bow and an apology.'],
+  osaka: ['Osaka cluster traced to a takoyaki stand with an hour-long wait.', 'Outbreak blamed on everyone talking with their hands too close.'],
+  shanghai: ['Shanghai cases linked to a bubble-tea line that circled the block.', 'Outbreak takes the maglev, arrives early.'],
+  hongkong: ['Hong Kong cluster forms in a dim sum hall at maximum trolley traffic.', 'Cases spread up a hillside escalator no one could exit.'],
+  taipei: ['Taipei outbreak traced to a night market of shoulder-to-shoulder snacking.', 'Cases spread through shared stinky tofu, odorless to the virus.'],
+  bangkok: ['Bangkok cluster forms in a tuk-tuk shortcut that was neither short nor a cut.', 'Cases spread at a street-food stall too good to skip.'],
+  hochiminh: ['Ho Chi Minh City outbreak traced to a sea of 8 million motorbikes.', 'Cases spread over iced coffee strong enough to wake the dead.'],
+  jakarta: ['Jakarta cluster forms in a traffic jam residents have named.', 'Outbreak blamed on a mall so large it has its own weather.'],
+  manila: ['Manila cases spread through a jeepney packed past capacity twice over.', 'Outbreak survives a typhoon, refuses to leave.'],
+  sydney: ['Sydney cluster traced to a beach where distancing meant one towel apart.', 'Cases spread at a barbecue that ran until Tuesday.'],
+};
+const GENERIC_NEWS = [
+  'BREAKING: [CITY] outbreak blamed on "a guy who seemed totally fine at brunch."',
+  '[CITY] cases traced to one person confidently insisting it was "just allergies."',
+  'Officials in [CITY] announce the virus, then announce a committee about the virus.',
+  '[CITY] spread linked to a group chat that agreed to "definitely still meet up."',
+  'Sources say [CITY] cluster began when someone said "I never get sick."',
+  '[CITY] outbreak traced to a door handle everyone swears they did not touch.',
+  'Virus reaches [CITY]; locals blame the neighboring city on principle.',
+  '[CITY] cases rise after a meeting that "really could have been an email."',
+];
+function _pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+export function newsHeadline(city) {
+  const n = CITIES[city].name;
+  const pool = CITY_NEWS[city];
+  if (pool && Math.random() < 0.82) return _pick(pool);
+  return _pick(GENERIC_NEWS).split("[CITY]").join(n);
 }
