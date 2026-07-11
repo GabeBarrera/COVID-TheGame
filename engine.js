@@ -1,11 +1,11 @@
 // COVID: The Game — core data + rules engine (pure-ish: functions mutate a passed game object)
 
-export const COLORS = ['alpha', 'delta', 'omega', 'kraken'];
+export const COLORS = ['alpha', 'beta', 'gamma', 'delta'];
 export const STRAINS = {
   alpha:  { name: 'ALPHA',  hex: '#2563EB', soft: '#DBEAFE' },
-  delta:  { name: 'DELTA',  hex: '#D97706', soft: '#FEF3C7' },
-  omega:  { name: 'OMEGA',  hex: '#7C3AED', soft: '#EDE9FE' },
-  kraken: { name: 'KRAKEN', hex: '#DC2626', soft: '#FEE2E2' },
+  beta:   { name: 'BETA',  hex: '#D97706', soft: '#FEF3C7' },
+  gamma:  { name: 'GAMMA', hex: '#7C3AED', soft: '#EDE9FE' },
+  delta:  { name: 'DELTA', hex: '#DC2626', soft: '#FEE2E2' },
 };
 export const INFECTION_RATES = [2, 2, 2, 3, 3, 4, 4];
 export const MAX_OUTBREAKS = 8;
@@ -29,42 +29,42 @@ export const CITIES = {
   berlin:       C('Berlin', 'alpha', 13.4, 52.5),
   rome:         C('Rome', 'alpha', 12.5, 41.9),
   moscow:       C('Moscow', 'alpha', 37.6, 55.8),
-  mexicocity:   C('Mexico City', 'delta', -99.1, 19.4),
-  miami:        C('Miami', 'delta', -80.2, 25.8),
-  bogota:       C('Bogotá', 'delta', -74.1, 4.7),
-  lima:         C('Lima', 'delta', -77, -12),
-  saopaulo:     C('São Paulo', 'delta', -46.6, -23.5),
-  buenosaires:  C('Buenos Aires', 'delta', -58.4, -34.6),
-  casablanca:   C('Casablanca', 'delta', -7.6, 33.6),
-  lagos:        C('Lagos', 'delta', 3.4, 6.5),
-  kinshasa:     C('Kinshasa', 'delta', 15.3, -4.3),
-  nairobi:      C('Nairobi', 'delta', 36.8, -1.3),
-  johannesburg: C('Johannesburg', 'delta', 28, -26.2),
-  khartoum:     C('Khartoum', 'delta', 32.5, 15.6),
-  istanbul:     C('Istanbul', 'omega', 29, 41),
-  cairo:        C('Cairo', 'omega', 31.2, 30),
-  riyadh:       C('Riyadh', 'omega', 46.7, 24.7),
-  baghdad:      C('Baghdad', 'omega', 44.4, 33.3),
-  tehran:       C('Tehran', 'omega', 51.4, 35.7),
-  dubai:        C('Dubai', 'omega', 55.3, 25.3),
-  karachi:      C('Karachi', 'omega', 67, 24.9),
-  mumbai:       C('Mumbai', 'omega', 72.9, 19.1),
-  delhi:        C('Delhi', 'omega', 77.2, 28.6),
-  chennai:      C('Chennai', 'omega', 80.3, 13.1),
-  kolkata:      C('Kolkata', 'omega', 88.4, 22.6),
-  dhaka:        C('Dhaka', 'omega', 90.4, 23.8, 1.5, -1.8),
-  beijing:      C('Beijing', 'kraken', 116.4, 39.9),
-  seoul:        C('Seoul', 'kraken', 127, 37.6),
-  tokyo:        C('Tokyo', 'kraken', 139.7, 35.7),
-  osaka:        C('Osaka', 'kraken', 135.5, 34.7, -0.5, 2.5),
-  shanghai:     C('Shanghai', 'kraken', 121.5, 31.2),
-  hongkong:     C('Hong Kong', 'kraken', 114.2, 22.3),
-  taipei:       C('Taipei', 'kraken', 121.6, 25, 1.5, 0),
-  bangkok:      C('Bangkok', 'kraken', 100.5, 13.8),
-  hochiminh:    C('Ho Chi Minh City', 'kraken', 106.7, 10.8),
-  jakarta:      C('Jakarta', 'kraken', 106.8, -6.2),
-  manila:       C('Manila', 'kraken', 121, 14.6),
-  sydney:       C('Sydney', 'kraken', 151.2, -33.9),
+  mexicocity:   C('Mexico City', 'beta', -99.1, 19.4),
+  miami:        C('Miami', 'beta', -80.2, 25.8),
+  bogota:       C('Bogotá', 'beta', -74.1, 4.7),
+  lima:         C('Lima', 'beta', -77, -12),
+  saopaulo:     C('São Paulo', 'beta', -46.6, -23.5),
+  buenosaires:  C('Buenos Aires', 'beta', -58.4, -34.6),
+  casablanca:   C('Casablanca', 'beta', -7.6, 33.6),
+  lagos:        C('Lagos', 'beta', 3.4, 6.5),
+  kinshasa:     C('Kinshasa', 'beta', 15.3, -4.3),
+  nairobi:      C('Nairobi', 'beta', 36.8, -1.3),
+  johannesburg: C('Johannesburg', 'beta', 28, -26.2),
+  khartoum:     C('Khartoum', 'beta', 32.5, 15.6),
+  istanbul:     C('Istanbul', 'gamma', 29, 41),
+  cairo:        C('Cairo', 'gamma', 31.2, 30),
+  riyadh:       C('Riyadh', 'gamma', 46.7, 24.7),
+  baghdad:      C('Baghdad', 'gamma', 44.4, 33.3),
+  tehran:       C('Tehran', 'gamma', 51.4, 35.7),
+  dubai:        C('Dubai', 'gamma', 55.3, 25.3),
+  karachi:      C('Karachi', 'gamma', 67, 24.9),
+  mumbai:       C('Mumbai', 'gamma', 72.9, 19.1),
+  delhi:        C('Delhi', 'gamma', 77.2, 28.6),
+  chennai:      C('Chennai', 'gamma', 80.3, 13.1),
+  kolkata:      C('Kolkata', 'gamma', 88.4, 22.6),
+  dhaka:        C('Dhaka', 'gamma', 90.4, 23.8, 1.5, -1.8),
+  beijing:      C('Beijing', 'delta', 116.4, 39.9),
+  seoul:        C('Seoul', 'delta', 127, 37.6),
+  tokyo:        C('Tokyo', 'delta', 139.7, 35.7),
+  osaka:        C('Osaka', 'delta', 135.5, 34.7, -0.5, 2.5),
+  shanghai:     C('Shanghai', 'delta', 121.5, 31.2),
+  hongkong:     C('Hong Kong', 'delta', 114.2, 22.3),
+  taipei:       C('Taipei', 'delta', 121.6, 25, 1.5, 0),
+  bangkok:      C('Bangkok', 'delta', 100.5, 13.8),
+  hochiminh:    C('Ho Chi Minh City', 'delta', 106.7, 10.8),
+  jakarta:      C('Jakarta', 'delta', 106.8, -6.2),
+  manila:       C('Manila', 'delta', 121, 14.6),
+  sydney:       C('Sydney', 'delta', 151.2, -33.9),
 };
 
 export const EDGES = [
@@ -149,6 +149,8 @@ export const EVENTS = {
   jet:      { name: 'Charter Jet', desc: 'Fly any pawn to any city. Middle seat, obviously.' },
   model:    { name: 'Predictive Model', desc: 'Inspect the top 6 infection cards and rearrange them. The model is always right, retroactively.' },
   bubble:   { name: 'Contact Bubble', desc: 'Remove one city from the infection discard pile from the game. That neighborhood simply stopped answering.' },
+  masking:  { name: 'Successful Masking Protocol', desc: 'Clear ALL infection cubes from one city, then shield it from new infection for 3 turns. Turns out the masks worked.' },
+  antivax:  { name: 'Anti-Vaxxers Unite', desc: 'A random city gains 1 infection cube and refuses all treatment for 1 turn. They did their own research.' },
 };
 
 // ---- Deck helpers -----------------------------------------------------
@@ -181,12 +183,13 @@ export function newGame(playerDefs, epidemics) {
     ratePos: 0, outbreaks: 0,
     epidemics, epidemicsDrawn: 0,
     lockdownArmed: false,
+    masked: {}, noTreat: {},
     engineerFlightUsed: false,
     log: [], effects: [], effectSeq: 0,
     lossReason: null,
     pending: null, // {type:'draw'|'infect'|..., ...}
   };
-  for (const id of Object.keys(CITIES)) { g.cubes[id] = { alpha: 0, delta: 0, omega: 0, kraken: 0 }; }
+  for (const id of Object.keys(CITIES)) { g.cubes[id] = { alpha: 0, beta: 0, gamma: 0, delta: 0 }; }
   for (const col of COLORS) { g.supply[col] = CUBE_SUPPLY; g.cured[col] = false; g.eradicated[col] = false; }
 
   // infection deck + initial infections
@@ -243,6 +246,7 @@ function medicShield(g, city, color) {
 export function addCubes(g, city, color, n, chain) {
   if (g.phase === 'lost' || g.phase === 'won') return;
   if (g.eradicated[color]) { log(g, 'sys', `${STRAINS[color].name} is eradicated — ${CITIES[city].name} shrugs it off.`); return; }
+  if (g.masked[city]) { log(g, 'good', `Masking Protocol shields ${CITIES[city].name} from new ${STRAINS[color].name} cases.`); return; }
   if (quarantined(g, city)) { log(g, 'good', `Quarantine Officer blocks the ${STRAINS[color].name} spread into ${CITIES[city].name}.`); return; }
   if (medicShield(g, city, color)) { log(g, 'good', `Frontline Nurse in ${CITIES[city].name} neutralizes the incoming ${STRAINS[color].name} cases.`); return; }
   for (let k = 0; k < n; k++) {
@@ -355,11 +359,13 @@ export function doRouteHop(g, pawnIdx, dest, isLast, routeLen) {
 
 export function canTreat(g) {
   const p = g.players[g.current];
+  if (g.noTreat[p.city]) return [];
   return COLORS.filter(c => g.cubes[p.city][c] > 0);
 }
 export function doTreat(g, color) {
   const p = g.players[g.current];
   const city = p.city;
+  if (g.noTreat[city]) return;
   let n = 1;
   if (g.cured[color] || p.role === 'nurse') n = g.cubes[city][color];
   g.cubes[city][color] -= n;
@@ -558,6 +564,8 @@ export function infectStep(g) {
 
 export function nextTurn(g) {
   if (g.phase === 'lost' || g.phase === 'won') return;
+  for (const c of Object.keys(g.masked)) { if (--g.masked[c] <= 0) { delete g.masked[c]; log(g, 'sys', `Masking Protocol in ${CITIES[c].name} lapses.`); } }
+  for (const c of Object.keys(g.noTreat)) { if (--g.noTreat[c] <= 0) delete g.noTreat[c]; }
   g.current = (g.current + 1) % g.players.length;
   g.turn++;
   g.actionsLeft = 4;
@@ -619,4 +627,26 @@ export function eventBubble(g, playerIdx, uid) {
   const card = g.infectionDiscard.splice(idx, 1)[0];
   g.removedInfection.push(card);
   log(g, 'good', `${CITIES[card.city].name} forms a contact bubble — its card is removed from the game.`);
+}
+
+export function eventMasking(g, playerIdx, city) {
+  playEvent(g, playerIdx, 'masking');
+  let cleared = 0;
+  for (const col of COLORS) {
+    const n = g.cubes[city][col];
+    if (n > 0) { g.supply[col] += n; g.cubes[city][col] = 0; cleared += n; checkEradication(g, col); }
+  }
+  g.masked[city] = 3;
+  effect(g, 'treat', city, null);
+  log(g, 'good', `Successful Masking Protocol in ${CITIES[city].name}: ${cleared} cube${cleared === 1 ? '' : 's'} cleared, shielded for 3 turns.`);
+}
+export function eventAntiVax(g, playerIdx) {
+  playEvent(g, playerIdx, 'antivax');
+  const ids = Object.keys(CITIES);
+  const city = ids[Math.floor(Math.random() * ids.length)];
+  const color = CITIES[city].color;
+  g.noTreat[city] = 1;
+  effect(g, 'outbreak', city, color);
+  log(g, 'event', `Anti-Vaxxers Unite in ${CITIES[city].name}: +1 ${STRAINS[color].name} cube, no treatment for 1 turn. They did their own research.`);
+  addCubes(g, city, color, 1, new Set());
 }

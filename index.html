@@ -604,6 +604,9 @@ class Component extends DCLogic {
       } else if (m.type === 'jet') {
         this.setUi({ mode: null });
         this.startFlight(m.pawn, g.players[m.pawn].city, id, () => this.mut(gg => E.eventJet(gg, m.player, m.pawn, id)));
+      } else if (m.type === 'masking') {
+        this.setUi({ mode: null });
+        this.mut(gg => E.eventMasking(gg, m.player, id));
       }
       return;
     }
@@ -710,6 +713,12 @@ class Component extends DCLogic {
     if (ev === 'model') {
       const top = g.infectionDeck.slice(-6).reverse(); // next-drawn first
       return this.setUi({ modal: { type: 'model', player: playerIdx, order: top.map(c => c.uid) } });
+    }
+    if (ev === 'masking') {
+      return this.setUi({ mode: { type: 'masking', player: playerIdx }, modal: null });
+    }
+    if (ev === 'antivax') {
+      return this.mut(gg => E.eventAntiVax(gg, playerIdx));
     }
     if (ev === 'bubble') {
       if (!g.infectionDiscard.length) return this.toast('The infection discard pile is empty.');
@@ -884,6 +893,8 @@ class Component extends DCLogic {
       let dot = `width:13px;height:13px;border-radius:${isStation ? '3px' : '50%'};background:${fill};border:3px solid ${isStation && domHex ? domHex : E.STRAINS[c.color].hex};flex-shrink:0;`;
       if (isHere) dot += 'animation:pulseRing 1.6s infinite;';
       else if (targeting) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.3);';
+      else if (g.masked[id]) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.55);';
+      else if (g.noTreat[id]) dot += 'box-shadow:0 0 0 3px rgba(180,35,24,.55);';
       else if (adj && g.phase === 'actions') dot += 'box-shadow:0 0 0 3px rgba(20,24,29,.12);';
       return {
         id, x: p.x, y: p.y, name: c.name,
@@ -984,7 +995,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding — click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet — click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding — click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet — click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol — click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
 
     // modals
