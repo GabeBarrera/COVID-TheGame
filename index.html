@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -30,9 +30,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
   <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
     <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;">
       <div style="width:640px;max-width:94vw;background:#FFFFFF;border:1px solid #E4E8EC;border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR · v2.7</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR Â· v2.7</div>
         <h1 style="margin:8px 0 4px;font-size:34px;font-weight:700;letter-spacing:-0.5px;">COVID: The Game</h1>
-        <div style="font-size:13.5px;color:#5C6670;margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2–4 officials. Any resemblance to actual events is entirely the point.</div>
+        <div style="font-size:13.5px;color:#5C6670;margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2â€“4 officials. Any resemblance to actual events is entirely the point.</div>
 
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:#5C6670;margin-bottom:8px;">THREAT LEVEL</div>
         <div style="display:flex;gap:8px;margin-bottom:26px;">
@@ -60,7 +60,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
                   <option value="quarantine">Quarantine Officer</option>
                 </select>
                 <sc-if value="{{ p.canRemove }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:#98A2AD;cursor:pointer;font-size:16px;padding:4px;" title="Remove">✕</button>
+                  <button onClick="{{ p.onRemove }}" style="border:none;background:none;color:#98A2AD;cursor:pointer;font-size:16px;padding:4px;" title="Remove">âœ•</button>
                 </sc-if>
               </div>
               <div style="font-size:12px;color:#5C6670;font-style:italic;padding-left:38px;">{{ p.blurb }}</div>
@@ -123,7 +123,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
       <div data-screen-label="World board" style="flex:1;position:relative;background:#DDE6EB;overflow:hidden;">
         <div ref="{{ mapRef }}" style="position:absolute;inset:0;z-index:1;"></div>
         <div ref="{{ overlayRef }}" style="position:absolute;inset:0;z-index:2;pointer-events:none;">
-          <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible;">
+          <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible;pointer-events:none;">
             <sc-for list="{{ lines }}" as="l" hint-placeholder-count="10">
               <line x1="{{ l.x1 }}" y1="{{ l.y1 }}" x2="{{ l.x2 }}" y2="{{ l.y2 }}" stroke="#5C7385" stroke-width="1" stroke-dasharray="4 4" opacity="0.55"></line>
             </sc-for>
@@ -141,10 +141,10 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;width:15px;height:15px;border-radius:50%;background:{{ travelHex }};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,29,.45);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;pointer-events:none;">{{ travelNum }}</div>
           </sc-if>
           <sc-if value="{{ showFlight }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;left:{{ flightX }}px;top:{{ flightY }}px;transform:translate(-50%,-50%) rotate({{ flightRot }}deg);z-index:31;pointer-events:none;font-size:18px;color:{{ flightHex }};text-shadow:0 1px 3px rgba(20,24,29,.4);line-height:1;">✈</div>
+            <div style="position:absolute;left:{{ flightX }}px;top:{{ flightY }}px;transform:translate(-50%,-50%) rotate({{ flightRot }}deg);z-index:31;pointer-events:none;font-size:18px;color:{{ flightHex }};text-shadow:0 1px 3px rgba(20,24,29,.4);line-height:1;">âœˆ</div>
           </sc-if>
           <sc-for list="{{ cityNodes }}" as="c" hint-placeholder-count="12">
-            <div onClick="{{ c.onClick }}" title="{{ c.name }}" style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;width:0;overflow:visible;pointer-events:auto;">
+            <div onClick="{{ c.onClick }}" title="{{ c.name }}" style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:10;width:0;overflow:visible;pointer-events:none;">
               <div style="display:flex;gap:2px;height:13px;margin-bottom:2px;">
                 <sc-for list="{{ c.cubes }}" as="q" hint-placeholder-count="0">
                   <div style="background:{{ q.hex }};color:#fff;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;border-radius:3px;padding:0 3px;line-height:13px;animation:popIn .35s ease-out;box-shadow:0 1px 3px rgba(20,24,29,.25);">{{ q.n }}</div>
@@ -161,6 +161,12 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
               </div>
             </div>
           </sc-for>
+        </div>
+
+        <!-- zoom controls (HTML, so they always receive clicks above the map) -->
+        <div style="position:absolute;right:14px;bottom:14px;z-index:50;display:flex;flex-direction:column;gap:6px;pointer-events:auto;">
+          <button onClick="{{ onZoomIn }}" title="Zoom in" style="width:34px;height:34px;border:1px solid #E4E8EC;background:#FFFFFF;color:#14181D;border-radius:8px;font-size:19px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">+</button>
+          <button onClick="{{ onZoomOut }}" title="Zoom out" style="width:34px;height:34px;border:1px solid #E4E8EC;background:#FFFFFF;color:#14181D;border-radius:8px;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(20,24,29,.12);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;padding:0;">âˆ’</button>
         </div>
 
         <!-- infect banner -->
@@ -193,11 +199,11 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;bottom:16px;left:16px;z-index:45;max-width:min(360px,72vw);background:#FFFFFF;border:1px solid #E4E8EC;border-left:4px solid {{ newsHex }};border-radius:8px;box-shadow:0 10px 30px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
             <div style="display:flex;align-items:center;gap:8px;background:#B42318;color:#fff;padding:5px 10px;">
               <div style="width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1s infinite;flex-shrink:0;"></div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:2px;font-weight:700;flex:1;">BREAKING · {{ newsCity }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:2px;font-weight:700;flex:1;">BREAKING Â· {{ newsCity }}</div>
               <sc-if value="{{ showNewsMore }}" hint-placeholder-val="{{ false }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;background:rgba(255,255,255,.22);border-radius:4px;padding:1px 5px;">{{ newsMoreLabel }}</div>
               </sc-if>
-              <button onClick="{{ onNewsClose }}" title="Dismiss" style="border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:4px;width:18px;height:18px;line-height:1;font-size:11px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+              <button onClick="{{ onNewsClose }}" title="Dismiss" style="border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:4px;width:18px;height:18px;line-height:1;font-size:11px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">âœ•</button>
             </div>
             <div style="padding:9px 12px 10px;font-size:13px;font-weight:600;line-height:1.4;text-wrap:pretty;">{{ newsText }}</div>
           </div>
@@ -213,7 +219,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <div style="{{ curBadgeStyle }}">{{ curNum }}</div>
             <div style="flex:1;">
               <div style="font-size:16px;font-weight:700;">{{ curName }}</div>
-              <div style="font-size:11.5px;font-weight:600;color:{{ curRoleHex }};">{{ curRoleName }} · in {{ curCity }}</div>
+              <div style="font-size:11.5px;font-weight:600;color:{{ curRoleHex }};">{{ curRoleName }} Â· in {{ curCity }}</div>
             </div>
             <div style="display:flex;gap:4px;" title="Actions remaining">
               <sc-for list="{{ actionPips }}" as="a" hint-placeholder-count="4">
@@ -235,7 +241,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <!-- actions -->
         <div style="padding:12px 16px;border-bottom:1px solid #E4E8EC;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">ACTIONS — CLICK A CITY TO MOVE</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#98A2AD;margin-bottom:8px;">ACTIONS â€” CLICK A CITY TO MOVE</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             <sc-for list="{{ treatBtns }}" as="t" hint-placeholder-count="0">
               <button onClick="{{ t.onClick }}" disabled="{{ t.disabled }}" style="{{ t.style }}">{{ t.label }}</button>
@@ -271,7 +277,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
                   <span style="border:1px solid #E4E8EC;border-left:3px solid {{ oc.hex }};border-radius:3px;padding:1px 5px;font-size:10.5px;">{{ oc.label }}</span>
                 </sc-for>
                 <sc-for list="{{ ot.events }}" as="oe" hint-placeholder-count="0">
-                  <button onClick="{{ oe.onPlay }}" style="border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">{{ oe.label }} ▸</button>
+                  <button onClick="{{ oe.onPlay }}" style="border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">{{ oe.label }} â–¸</button>
                 </sc-for>
               </div>
             </sc-for>
@@ -336,7 +342,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
               <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Predictive Model</div>
               <div style="font-size:12px;color:#5C6670;margin-bottom:14px;">The next 6 infection reports, top first. Rearrange them.</div>
             </div>
-            <button onClick="{{ onCancel }}" title="Close without committing" style="border:none;background:#F2F4F6;color:#5C6670;border-radius:6px;width:26px;height:26px;line-height:1;font-size:13px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">✕</button>
+            <button onClick="{{ onCancel }}" title="Close without committing" style="border:none;background:#F2F4F6;color:#5C6670;border-radius:6px;width:26px;height:26px;line-height:1;font-size:13px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">âœ•</button>
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ modelCards }}" as="mc" hint-placeholder-count="6">
@@ -344,8 +350,8 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;width:16px;">{{ mc.pos }}</div>
                 <div style="width:9px;height:9px;border-radius:2px;background:{{ mc.hex }};"></div>
                 <div style="flex:1;font-size:13px;font-weight:600;">{{ mc.name }}</div>
-                <button onClick="{{ mc.up }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">▲</button>
-                <button onClick="{{ mc.down }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">▼</button>
+                <button onClick="{{ mc.up }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">â–²</button>
+                <button onClick="{{ mc.down }}" style="border:1px solid #D4DAE0;background:#fff;border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:11px;">â–¼</button>
               </div>
             </sc-for>
           </div>
@@ -357,7 +363,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     <sc-if value="{{ showDraw }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;background:rgba(20,24,29,.55);z-index:110;display:flex;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:12px;padding:26px 30px;width:440px;max-width:92vw;text-align:center;animation:fadeUp .25s ease-out;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#98A2AD;margin-bottom:14px;">END OF TURN — BRIEFING CARD {{ drawIdxLabel }} OF 2</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#98A2AD;margin-bottom:14px;">END OF TURN â€” BRIEFING CARD {{ drawIdxLabel }} OF 2</div>
           <sc-if value="{{ drawHidden }}" hint-placeholder-val="{{ true }}">
             <div style="width:170px;height:110px;margin:0 auto 18px;border-radius:10px;background:repeating-linear-gradient(45deg,#E9EDF0,#E9EDF0 8px,#F4F6F8 8px,#F4F6F8 16px);border:1px solid #D4DAE0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#98A2AD;letter-spacing:2px;">CLASSIFIED</div>
             <button onClick="{{ onReveal }}" style="background:#14181D;color:#fff;border:none;border-radius:7px;padding:12px 30px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reveal</button>
@@ -414,6 +420,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     clearInterval(this._it); clearInterval(this._tv); clearTimeout(this._toastT); clearTimeout(this._fxT); clearTimeout(this._newsT); clearTimeout(this._pingT); cancelAnimationFrame(this._flRaf);
     window.removeEventListener('resize', this._onResize);
+    if (this._wheelBoard && this._onWheel) this._wheelBoard.removeEventListener('wheel', this._onWheel);
     if (this._ro) this._ro.disconnect();
     if (this.root) { this.root.dispose(); this.root = null; this.chart = null; }
   }
@@ -454,7 +461,8 @@ class Component extends DCLogic {
       interactive: false,
     });
     chart.chartContainer.set('background', am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 }));
-    chart.set('zoomControl', am5map.ZoomControl.new(root, {}));
+    // NOTE: no am5map.ZoomControl â€” its canvas buttons get shadowed by the HTML
+    // overlay's hit-testing. We drive zoom from HTML buttons + a wheel handler instead.
     const onView = () => {
       this.syncOverlay();
       if (this._raf) return;
@@ -466,12 +474,49 @@ class Component extends DCLogic {
     polys.events.on('datavalidated', () => { chart.goHome(0); onView(); });
     this._ro = new ResizeObserver(() => { root.resize(); onView(); });
     this._ro.observe(this._mapEl);
+    // wheel-to-zoom: attach to the board container so it fires no matter which
+    // HTML element (dot, label, canvas) sits under the cursor.
+    const board = this._mapEl.parentElement;
+    if (board && this._wheelBoard !== board) {
+      if (this._wheelBoard && this._onWheel) this._wheelBoard.removeEventListener('wheel', this._onWheel);
+      this._wheelBoard = board;
+      this._onWheel = (e) => {
+        if (!this.chart) return;
+        e.preventDefault();
+        this.zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.35 : 1 / 1.35);
+      };
+      board.addEventListener('wheel', this._onWheel, { passive: false });
+    }
     this.root = root;
     this.chart = chart;
     this.forceUpdate();
   }
 
   geoToPx(lat, lon) { return this.chart.convert({ longitude: lon, latitude: lat }); }
+
+  clampZoom(level) {
+    const c = this.chart;
+    return Math.min(c.get('maxZoomLevel') || 24, Math.max(c.get('minZoomLevel') || 1, level));
+  }
+  // zoom keeping the point under the cursor roughly fixed
+  zoomAt(clientX, clientY, factor) {
+    const c = this.chart; if (!c) return;
+    const rect = this._mapEl.getBoundingClientRect();
+    const px = clientX - rect.left, py = clientY - rect.top;
+    const geoBefore = c.invert({ x: px, y: py });
+    c.set('zoomLevel', this.clampZoom((c.get('zoomLevel') || 1) * factor));
+    // nudge the pan so the geo point under the cursor stays put after the zoom
+    const after = c.convert(geoBefore);
+    if (after) {
+      c.set('translateX', (c.get('translateX') || 0) + (px - after.x));
+      c.set('translateY', (c.get('translateY') || 0) + (py - after.y));
+    }
+  }
+  // zoom centered on the current view (the +/- buttons)
+  zoomButton = (factor) => {
+    const c = this.chart; if (!c) return;
+    c.set('zoomLevel', this.clampZoom((c.get('zoomLevel') || 1) * factor));
+  };
 
   overlayRef = (el) => { this._ovEl = el; };
 
@@ -670,7 +715,7 @@ class Component extends DCLogic {
       const path = this.bfs(g.players[pawnIdx].city, id);
       if (path) {
         const cost = path.length - 1;
-        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route — ${cost} actions` });
+        if (cost <= g.actionsLeft) opts.push({ how: 'route', path, cost, label: `Overland route â€” ${cost} actions` });
         else if (!opts.length) return this.toast(`Too far overland: needs ${cost} actions, ${g.actionsLeft} left.`);
       }
     }
@@ -722,7 +767,7 @@ class Component extends DCLogic {
         type: 'picker', title: `Develop the ${E.STRAINS[chk.color].name} vaccine`,
         sub: `Turn in ${chk.need} matching samples. This cannot be undone (science rarely can).`,
         items: [{
-          hex: E.STRAINS[chk.color].hex, label: `Confirm — submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
+          hex: E.STRAINS[chk.color].hex, label: `Confirm â€” submit ${cards.map(c => E.CITIES[c.city].name).join(', ')}`, sub: '',
           onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doCure(gg, chk.color, cards.map(c => c.uid))); },
         }],
       },
@@ -828,6 +873,8 @@ class Component extends DCLogic {
       onBuild: this.onBuild, onCureClick: this.onCureClick, onShareClick: this.onShareClick, onPass: this.onPass,
       onModelConfirm: () => {},
       onCancelTarget: () => this.setUi({ mode: null }),
+      onZoomIn: () => this.zoomButton(1.6),
+      onZoomOut: () => this.zoomButton(1 / 1.6),
       onPawnSel: (e) => this.setUi({ actPawn: +e.target.value }),
     };
     if (!ready) return v;
@@ -860,11 +907,11 @@ class Component extends DCLogic {
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
-      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE ✓' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
       return {
         name: s.name, status,
         statusColor: g.cured[c] ? '#0E9F8A' : '#98A2AD',
-        title: `${s.name} — supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
+        title: `${s.name} â€” supply ${g.supply[c]}/${E.CUBE_SUPPLY}`,
         chipStyle: `display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;border:1px solid #E4E8EC;border-radius:7px;padding:5px 10px;background:${g.cured[c] ? '#F0FAF8' : '#FAFBFC'};`,
         dotStyle: `width:11px;height:11px;border-radius:3px;background:${s.hex};`,
       };
@@ -874,7 +921,7 @@ class Component extends DCLogic {
       style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:#EDF0F2;color:#98A2AD;'}`,
     }));
 
-    // board — project cities through the amCharts map
+    // board â€” project cities through the amCharts map
     v.mapRef = this.mapRef;
     v.overlayRef = this.overlayRef;
     const mobile = (this.state.vw ?? window.innerWidth) < 760;
@@ -889,7 +936,7 @@ class Component extends DCLogic {
       v.panelStyle = `height:${open ? '52vh' : '0px'};width:100%;flex-shrink:0;background:#FFFFFF;border-top:1px solid #E4E8EC;transition:height .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:100%;height:52vh;display:flex;flex-direction:column;min-height:0;";
       v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:84px;height:24px;border:1px solid #E4E8EC;border-bottom:none;border-radius:8px 8px 0 0;background:#FFFFFF;cursor:pointer;transition:bottom .28s ease;color:#5C6670;font-size:12px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
-      v.panelChevron = open ? '▾' : '▴';
+      v.panelChevron = open ? 'â–¾' : 'â–´';
     } else {
       v.topBarStyle = "height:58px;background:#FFFFFF;border-bottom:1px solid #E4E8EC;display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;";
       v.dividerStyle = "width:1px;height:32px;background:#E4E8EC;";
@@ -899,7 +946,7 @@ class Component extends DCLogic {
       v.panelStyle = `width:${open ? 390 : 0}px;flex-shrink:0;background:#FFFFFF;border-left:1px solid #E4E8EC;transition:width .28s ease;overflow:hidden;min-height:0;`;
       v.panelInnerStyle = "width:390px;height:100%;display:flex;flex-direction:column;min-height:0;";
       v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:22px;height:64px;border:1px solid #E4E8EC;border-right:none;border-radius:8px 0 0 8px;background:#FFFFFF;cursor:pointer;transition:right .28s ease;color:#5C6670;font-size:11px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
-      v.panelChevron = open ? '▸' : '◂';
+      v.panelChevron = open ? 'â–¸' : 'â—‚';
     }
     const map = this.chart;
     const px = {};
@@ -916,7 +963,7 @@ class Component extends DCLogic {
       for (const [a, b] of E.EDGES) {
         const ca = E.CITIES[a], cb = E.CITIES[b];
         if (Math.abs(ca.lon - cb.lon) > 180) {
-          // crosses the antimeridian — split at ±180 with interpolated latitude
+          // crosses the antimeridian â€” split at Â±180 with interpolated latitude
           const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
           const span = (w.lon + 360) - e2.lon;
           const latAt180 = e2.lat + (w.lat - e2.lat) * ((180 - e2.lon) / span);
@@ -943,7 +990,7 @@ class Component extends DCLogic {
       let domHex = null, domN = 0;
       for (const col of E.COLORS) if (g.cubes[id][col] > domN) { domN = g.cubes[id][col]; domHex = E.STRAINS[col].hex; }
       const fill = isStation ? '#14181D' : (domHex || '#fff');
-      let dot = `width:13px;height:13px;border-radius:${isStation ? '3px' : '50%'};background:${fill};border:3px solid ${isStation && domHex ? domHex : E.STRAINS[c.color].hex};flex-shrink:0;`;
+      let dot = `width:13px;height:13px;border-radius:${isStation ? '3px' : '50%'};background:${fill};border:3px solid ${isStation && domHex ? domHex : E.STRAINS[c.color].hex};flex-shrink:0;pointer-events:auto;cursor:pointer;`;
       if (isHere) dot += 'animation:pulseRing 1.6s infinite;';
       else if (targeting) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.3);';
       else if (g.masked[id]) dot += 'box-shadow:0 0 0 3px rgba(14,159,138,.55);';
@@ -951,7 +998,7 @@ class Component extends DCLogic {
       else if (adj && g.phase === 'actions') dot += 'box-shadow:0 0 0 3px rgba(20,24,29,.12);';
       return {
         id, x: p.x, y: p.y, name: c.name,
-        label: (isStation ? '▣ ' : '') + c.name,
+        label: (isStation ? 'â–£ ' : '') + c.name,
         showLabel: showLabels, dotStyle: dot, cubes,
         pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({ hex: E.ROLES[q.role].hex, num: q.i + 1, name: q.name })),
         onClick: () => this.onCity(id),
@@ -993,7 +1040,7 @@ class Component extends DCLogic {
       style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:#E4E8EC;'}`,
     }));
     v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
-    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} · ${p.name}` }));
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
     v.actPawnValue = ui.actPawn;
 
     // action buttons
@@ -1048,7 +1095,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding — click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet — click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol — click a city to clear & shield it' : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding â€” click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet â€” click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol â€” click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
     const queue = ui.newsQueue || [];
     v.showNews = queue.length > 0;
@@ -1155,3 +1202,4 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
+
