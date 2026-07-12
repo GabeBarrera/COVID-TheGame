@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -30,9 +30,10 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
   <!-- ============ SETUP ============ -->
   <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:24px;">
-      <div style="width:640px;max-width:94vw;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR &middot; v2.7</div>
+    <div style="flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px;">
+      <div style="position:relative;width:640px;max-width:94vw;margin:auto;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:clamp(20px,5vw,36px) clamp(16px,6vw,40px);box-shadow:0 8px 30px rgba(20,24,29,.06);">
+        <button onClick="{{ onLockToggle }}" title="{{ lockTitle }}" style="{{ lockBtnStyle }}">{{ lockGlyph }}</button>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2.5px;color:#0E9F8A;font-weight:600;">GLOBAL RESPONSE SIMULATOR</div>
         <h1 style="margin:8px 0 4px;font-size:34px;font-weight:700;letter-spacing:-0.5px;">COVID: The Game</h1>
         <div style="font-size:13.5px;color:var(--text-sub);margin-bottom:26px;line-height:1.5;">A cooperative crisis-management exercise for 2&ndash;4 officials. Any resemblance to actual events is entirely the point.</div>
 
@@ -75,6 +76,26 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <button onClick="{{ startGame }}" style="margin-top:24px;width:100%;background:#0E9F8A;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#0B7F6E;">Convene the task force</button>
         <div style="font-size:11.5px;color:var(--text-mute);text-align:center;margin-top:10px;">Win: vaccinate all four strains. Lose: 8 outbreaks, an exhausted cube supply, or an empty briefing deck.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ LOCK / PASSWORD ============ -->
+  <sc-if value="{{ showLockModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,24,29,.5);z-index:220;display:flex;align-items:center;justify-content:center;" onClick="{{ onLockCancel }}">
+      <div style="background:var(--panel);border-radius:12px;padding:26px 28px;width:360px;max-width:92vw;animation:fadeUp .25s ease-out;box-shadow:0 20px 50px rgba(20,24,29,.3);" onClick="{{ stop }}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="font-size:22px;line-height:1;">&#128274;</div>
+          <div style="flex:1;font-size:17px;font-weight:700;">Restricted protocols</div>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-sub);margin-bottom:16px;line-height:1.5;">Enter the passphrase to enable special rules for this session.</div>
+        <form onSubmit="{{ onLockSubmit }}">
+          <input value="{{ lockInput }}" onChange="{{ onLockInput }}" type="password" placeholder="Passphrase" autoFocus="{{ true }}" style="{{ lockInputStyle }}" />
+          <sc-if value="{{ lockError }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px;color:#B42318;margin-top:8px;font-weight:600;">Incorrect passphrase. Try again.</div>
+          </sc-if>
+          <button type="submit" style="margin-top:16px;width:100%;background:#14181D;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Unlock</button>
+        </form>
       </div>
     </div>
   </sc-if>
@@ -153,7 +174,14 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <div style="position:absolute;left:{{ pingX }}px;top:{{ pingY }}px;width:26px;height:26px;border-radius:50%;border:3px solid var(--text);pointer-events:none;animation:ripple 1.4s ease-out forwards;z-index:6;"></div>
           </sc-if>
           <sc-if value="{{ showTravel }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;width:15px;height:15px;border-radius:50%;background:{{ travelHex }};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,29,.45);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;pointer-events:none;">{{ travelNum }}</div>
+            <div style="position:absolute;left:{{ travelX }}px;top:{{ travelY }}px;transform:translate(-50%,-50%);transition:left .3s ease,top .3s ease;z-index:30;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+              <sc-if value="{{ travelBoat }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(20,24,29,.45));">&#128674;</div>
+              </sc-if>
+              <sc-if value="{{ travelCar }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:18px;line-height:1;filter:drop-shadow(0 1px 2px rgba(20,24,29,.45));">&#128663;</div>
+              </sc-if>
+            </div>
           </sc-if>
           <sc-if value="{{ showFlight }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;left:{{ flightX }}px;top:{{ flightY }}px;transform:translate(-50%,-50%) rotate({{ flightRot }}deg);z-index:31;pointer-events:none;font-size:18px;color:{{ flightHex }};text-shadow:0 1px 3px rgba(20,24,29,.4);line-height:1;">&#9992;</div>
@@ -264,12 +292,16 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             <button onClick="{{ onBuild }}" disabled="{{ buildDisabled }}" title="{{ buildWhy }}" style="{{ buildStyle }}">Build lab</button>
             <button onClick="{{ onCureClick }}" disabled="{{ cureDisabled }}" title="{{ cureWhy }}" style="{{ cureStyle }}">Develop vaccine</button>
             <button onClick="{{ onShareClick }}" disabled="{{ shareDisabled }}" title="{{ shareWhy }}" style="{{ shareStyle }}">Share file</button>
+            <sc-if value="{{ showSpecial }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ onKiss }}" disabled="{{ affectionDisabled }}" title="{{ affectionWhy }}" style="{{ kissStyle }}">Kiss</button>
+              <button onClick="{{ onHug }}" disabled="{{ affectionDisabled }}" title="{{ affectionWhy }}" style="{{ hugStyle }}">Hug</button>
+            </sc-if>
             <button onClick="{{ onPass }}" disabled="{{ passDisabled }}" style="{{ passStyle }}">End turn</button>
           </div>
         </div>
 
         <!-- hand -->
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);max-height:34%;overflow:auto;">
+        <div style="{{ handSectionStyle }}">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);margin-bottom:8px;">HAND ({{ handCount }}/7)</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <sc-for list="{{ hand }}" as="h" hint-placeholder-count="3">
@@ -299,18 +331,57 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           </div>
         </div>
 
-        <!-- log -->
-        <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 16px 6px;">SITUATION LOG</div>
-          <div style="flex:1;overflow:auto;padding:0 16px 14px;display:flex;flex-direction:column;gap:5px;">
-            <sc-for list="{{ logEntries }}" as="e" hint-placeholder-count="6">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.45;color:{{ e.color }};border-left:2px solid {{ e.bar }};padding-left:8px;">{{ e.text }}</div>
-            </sc-for>
+        <!-- log (desktop: inline, 1/5 of panel) -->
+        <sc-if value="{{ showLogInline }}" hint-placeholder-val="{{ true }}">
+          <div style="{{ logSectionStyle }}">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 16px 6px;">SITUATION LOG</div>
+            <div style="display:flex;gap:6px;padding:0 16px 8px;flex-wrap:wrap;">
+              <sc-for list="{{ logFilters }}" as="lf" hint-placeholder-count="3">
+                <button onClick="{{ lf.onClick }}" style="{{ lf.style }}">{{ lf.label }}</button>
+              </sc-for>
+            </div>
+            <div style="flex:1;overflow:auto;padding:0 16px 14px;display:flex;flex-direction:column;gap:5px;">
+              <sc-for list="{{ logEntries }}" as="e" hint-placeholder-count="6">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.45;color:{{ e.color }};border-left:2px solid {{ e.bar }};padding-left:8px;">{{ e.text }}</div>
+              </sc-for>
+            </div>
           </div>
-        </div>
+        </sc-if>
+
+        <!-- log (mobile: collapsed under a button) -->
+        <sc-if value="{{ showLogButton }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 16px;border-top:1px solid var(--border);">
+            <button onClick="{{ onOpenLog }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:8px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);">&#9776;</span>
+              Situation Log
+            </button>
+          </div>
+        </sc-if>
         </div>
       </div>
     </div>
+
+    <!-- ===== situation log popup (mobile) ===== -->
+    <sc-if value="{{ showLogModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.5);z-index:170;display:flex;align-items:flex-end;justify-content:center;" onClick="{{ onCloseLog }}">
+        <div style="background:var(--panel);border-radius:14px 14px 0 0;width:100%;max-width:640px;max-height:82vh;display:flex;flex-direction:column;animation:fadeUp .28s ease-out;" onClick="{{ stop }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 10px;border-bottom:1px solid var(--border);">
+            <div style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-sub);font-weight:600;">SITUATION LOG</div>
+            <button onClick="{{ onCloseLog }}" style="border:none;background:var(--surface2);color:var(--text-sub);border-radius:6px;width:30px;height:30px;line-height:1;font-size:14px;cursor:pointer;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
+          </div>
+          <div style="display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+            <sc-for list="{{ logFilters }}" as="lf" hint-placeholder-count="3">
+              <button onClick="{{ lf.onClick }}" style="{{ lf.style }}">{{ lf.label }}</button>
+            </sc-for>
+          </div>
+          <div style="flex:1;overflow:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:6px;">
+            <sc-for list="{{ logEntries }}" as="e" hint-placeholder-count="6">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:{{ e.color }};border-left:2px solid {{ e.bar }};padding-left:9px;">{{ e.text }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
 
     <!-- ===== overlays ===== -->
     <sc-if value="{{ showMove }}" hint-placeholder-val="{{ false }}">
@@ -430,7 +501,8 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     <sc-if value="{{ labsOpen }}" hint-placeholder-val="{{ false }}">
       <div style="position:fixed;inset:0;z-index:150;" onClick="{{ onLabsToggle }}"></div>
       <div style="position:fixed;top:56px;left:14px;z-index:151;min-width:190px;max-height:60vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 34px rgba(20,24,29,.22);animation:fadeUp .18s ease-out;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 12px 6px;">RESEARCH LABS &middot; {{ labsCount }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 12px 3px;">RESEARCH LABS</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--text);padding:0 12px 8px;">{{ labsCount }} built <span style="color:var(--text-mute);font-weight:400;">/ {{ labsMax }} max</span></div>
         <sc-for list="{{ labsList }}" as="lb" hint-placeholder-count="1">
           <button onClick="{{ lb.onClick }}" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;border-top:1px solid var(--border);background:var(--panel);color:var(--text);padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:var(--surface2);">
             <div style="width:9px;height:9px;border-radius:2px;background:#06B6D4;flex-shrink:0;"></div>
@@ -484,10 +556,12 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 class Component extends DCLogic {
   state = {
     ready: false, screen: 'setup',
+    unlocked: false,
+    lock: { open: false, input: '', error: false },
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
     settings: { dark: false, pawnScale: 1, pinScale: 1 },
-    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false },
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false },
   };
 
   componentDidMount() {
@@ -556,7 +630,7 @@ class Component extends DCLogic {
     this._polys = polys;
     this._bgRect = am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 });
     chart.chartContainer.set('background', this._bgRect);
-    // NOTE: no am5map.ZoomControl — its canvas buttons get shadowed by the HTML
+    // NOTE: no am5map.ZoomControl â€” its canvas buttons get shadowed by the HTML
     // overlay's hit-testing. We drive zoom from HTML buttons + a wheel handler instead.
     const onView = () => {
       this.syncOverlay();
@@ -681,11 +755,11 @@ class Component extends DCLogic {
     return null;
   }
 
-  startFlight(pawn, from, to, apply) {
+  startFlight(pawn, from, to, apply, hexOverride) {
     if (from === to) return apply();
     const E = this.E, g = this.state.g;
     const dur = 1100;
-    this.setUi({ flight: { pawn, from, to, t: 0, num: pawn + 1, hex: E.ROLES[g.players[pawn].role].hex } });
+    this.setUi({ flight: { pawn, from, to, t: 0, num: pawn + 1, hex: hexOverride || E.ROLES[g.players[pawn].role].hex } });
     const t0 = performance.now();
     cancelAnimationFrame(this._flRaf);
     const step = (now) => {
@@ -701,12 +775,14 @@ class Component extends DCLogic {
 
   startRoute(pawn, path, cost) {
     const E = this.E, g = this.state.g;
-    this.setUi({ travel: { pawn, city: path[0], num: pawn + 1, hex: E.ROLES[g.players[pawn].role].hex } });
+    const modeFor = (a, b) => this.E.isSeaRoute(a, b) ? 'boat' : 'car';
+    this.setUi({ travel: { pawn, city: path[0], num: pawn + 1, mode: modeFor(path[0], path[1]), hex: E.ROLES[g.players[pawn].role].hex } });
     let i = 0;
     clearInterval(this._tv);
     this._tv = setInterval(() => {
       i++;
       if (i >= path.length) { clearInterval(this._tv); this._tv = null; this.setUi({ travel: null }); return; }
+      this.state.ui.travel.mode = modeFor(path[i - 1], path[i]);
       this.state.ui.travel.city = path[i];
       this.mut(gg => this.E.doRouteHop(gg, pawn, path[i], i === path.length - 1, cost));
     }, 340);
@@ -788,7 +864,7 @@ class Component extends DCLogic {
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
     this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions';
-    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false } });
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false } });
   };
 
   // ---------- board ----------
@@ -836,9 +912,15 @@ class Component extends DCLogic {
       this.startRoute(m.pawn, opt.path, opt.cost);
       return;
     }
-    if (opt.how === 'direct' || opt.how === 'charter') {
+    if (opt.how === 'direct' || opt.how === 'charter' || opt.how === 'shuttle') {
       this.setUi({ modal: null });
-      this.startFlight(m.pawn, g.players[m.pawn].city, m.dest, () => this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt)));
+      const hex = opt.how === 'shuttle' ? '#06B6D4' : undefined;
+      this.startFlight(m.pawn, g.players[m.pawn].city, m.dest, () => this.mut(gg => E.doMove(gg, m.pawn, m.dest, opt)), hex);
+      return;
+    }
+    if (opt.how === 'drive') {
+      this.setUi({ modal: null });
+      this.startRoute(m.pawn, [g.players[m.pawn].city, m.dest], 1);
       return;
     }
     if (opt.how === 'engineerFly') {
@@ -919,9 +1001,6 @@ class Component extends DCLogic {
     if (ev === 'masking') {
       return this.setUi({ mode: { type: 'masking', player: playerIdx }, modal: null });
     }
-    if (ev === 'antivax') {
-      return this.mut(gg => E.eventAntiVax(gg, playerIdx));
-    }
     if (ev === 'bubble') {
       if (!g.infectionDiscard.length) return this.toast('The infection discard pile is empty.');
       return this.setUi({
@@ -982,9 +1061,65 @@ class Component extends DCLogic {
     this.setState({ settings: this.state.settings });
     this.applyTheme();
   }
-  onToggleDark = () => this.setSetting({ dark: !this.state.settings.dark });
-  onPawnScale = (e) => this.setSetting({ pawnScale: +e.target.value });
+  onToggleDark = () => this.setSetting({ dark: !this.state.settings.dark });  onPawnScale = (e) => this.setSetting({ pawnScale: +e.target.value });
   onPinScale = (e) => this.setSetting({ pinScale: +e.target.value });
+  onLogFilter = (k) => this.setUi({ logFilter: k });
+  onOpenLog = () => this.setUi({ logModalOpen: true });
+  onCloseLog = () => this.setUi({ logModalOpen: false });
+
+  // ---------- lock / special rules ----------
+  onLockToggle = () => {
+    if (this.state.unlocked) {
+      this.setState({ unlocked: false, lock: { open: false, input: '', error: false } });
+      return;
+    }
+    this.setState({ lock: { open: true, input: '', error: false } });
+  };
+  onLockInput = (e) => this.setState({ lock: { ...this.state.lock, input: e.target.value, error: false } });
+  onLockCancel = () => this.setState({ lock: { open: false, input: '', error: false } });
+  onLockSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if ((this.state.lock.input || '').trim().toLowerCase() === 'loveisintheair') {
+      this.setState({ unlocked: true, lock: { open: false, input: '', error: false } });
+    } else {
+      this.setState({ lock: { ...this.state.lock, error: true } });
+    }
+  };
+
+  // Kiss: A grants B +1 action next turn, costs A one action use
+  onKiss = () => {
+    const E = this.E, g = this.state.g;
+    const mates = E.cityCompanions(g);
+    if (!mates.length) return;
+    const doIt = (idx) => this.mut(gg => E.doKiss(gg, idx));
+    if (mates.length === 1) return doIt(mates[0].i);
+    this.setUi({
+      modal: {
+        type: 'picker', title: 'Kiss', sub: 'Who gets a kiss? They receive +1 action on their next turn. Costs you 1 action.',
+        items: mates.map(m => ({ hex: E.ROLES[m.role].hex, label: m.name, sub: E.ROLES[m.role].name, onClick: () => { this.setUi({ modal: null }); doIt(m.i); } })),
+      },
+    });
+  };
+  // Hug: A asks B to gift an action â€” B confirms, A +1 now, B âˆ’1 next turn
+  onHug = () => {
+    const E = this.E, g = this.state.g;
+    const mates = E.cityCompanions(g);
+    if (!mates.length) return;
+    const confirm = (m) => this.setUi({
+      modal: {
+        type: 'picker', title: `${m.name}, accept the hug?`,
+        sub: `Gift one of your next-turn actions to ${g.players[g.current].name}? They gain +1 action now; you start your next turn with 3.`,
+        items: [{ hex: E.ROLES[m.role].hex, label: 'Yes â€” return the hug', sub: `+1 for ${g.players[g.current].name}`, onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doHug(gg, m.i)); } }],
+      },
+    });
+    if (mates.length === 1) return confirm(mates[0]);
+    this.setUi({
+      modal: {
+        type: 'picker', title: 'Hug', sub: 'Who do you hug? They will be asked to gift you an action.',
+        items: mates.map(m => ({ hex: E.ROLES[m.role].hex, label: m.name, sub: E.ROLES[m.role].name, onClick: () => confirm(m) })),
+      },
+    });
+  };
 
   // =====================================================================
   renderVals() {
@@ -1006,6 +1141,19 @@ class Component extends DCLogic {
       onZoomOut: () => this.zoomButton(1 / 1.6),
       onPawnSel: (e) => this.setUi({ actPawn: +e.target.value }),
     };
+
+    // lock button + password modal (setup screen + global)
+    v.onLockToggle = this.onLockToggle;
+    v.lockGlyph = this.state.unlocked ? '\uD83D\uDD13' : '\uD83D\uDD12';
+    v.lockTitle = this.state.unlocked ? 'Special rules active â€” click to disable' : 'Unlock special rules';
+    v.lockBtnStyle = `position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:10px;border:1px solid ${this.state.unlocked ? '#0E9F8A' : 'var(--border)'};background:${this.state.unlocked ? '#F0FAF8' : 'var(--surface2)'};cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;`;
+    v.showLockModal = this.state.lock.open;
+    v.lockInput = this.state.lock.input;
+    v.lockError = this.state.lock.error;
+    v.onLockInput = this.onLockInput;
+    v.onLockSubmit = this.onLockSubmit;
+    v.onLockCancel = this.onLockCancel;
+    v.lockInputStyle = "width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;font-size:14px;font-family:'IBM Plex Sans',sans-serif;background:var(--surface2);color:var(--text);outline:none;";
     if (!ready) return v;
 
     // ----- setup vals -----
@@ -1036,7 +1184,7 @@ class Component extends DCLogic {
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
-      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE ✓' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
       return {
         name: s.name, status,
         statusColor: g.cured[c] ? '#0E9F8A' : 'var(--text-mute)',
@@ -1049,6 +1197,7 @@ class Component extends DCLogic {
     // labs legend chip + dropdown
     const labCities = g.stations.slice();
     v.labsCount = labCities.length;
+    v.labsMax = E.MAX_STATIONS;
     v.labsCountText = `${labCities.length} built`;
     v.labsOpen = ui.labsOpen;
     v.labsChevron = ui.labsOpen ? '\u25B2' : '\u25BC';
@@ -1081,7 +1230,7 @@ class Component extends DCLogic {
       style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:var(--surface2);color:var(--text-mute);'}`,
     }));
 
-    // board — project cities through the amCharts map
+    // board â€” project cities through the amCharts map
     v.mapRef = this.mapRef;
     v.overlayRef = this.overlayRef;
     const mobile = (this.state.vw ?? window.innerWidth) < 760;
@@ -1099,6 +1248,10 @@ class Component extends DCLogic {
       const tw = isTouch ? 168 : 84, th = isTouch ? 48 : 24, tf = isTouch ? 24 : 12;
       v.toggleStyle = `position:absolute;left:50%;transform:translateX(-50%);bottom:${open ? '52vh' : '0px'};z-index:60;width:${tw}px;height:${th}px;border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;background:var(--panel);cursor:pointer;transition:bottom .28s ease;color:var(--text-sub);font-size:${tf}px;box-shadow:0 -2px 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
       v.panelChevron = open ? '\u25BE' : '\u25B4';
+      // mobile: hand keeps its share, log collapses behind a button
+      v.handSectionStyle = "padding:12px 16px;border-bottom:1px solid var(--border);flex:1;min-height:0;overflow:auto;";
+      v.showLogInline = false;
+      v.showLogButton = true;
     } else {
       v.topBarStyle = "height:58px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;padding:0 18px;flex-shrink:0;";
       v.dividerStyle = "width:1px;height:32px;background:var(--border);";
@@ -1110,6 +1263,11 @@ class Component extends DCLogic {
       const tw = isTouch ? 44 : 22, th = isTouch ? 128 : 64, tf = isTouch ? 22 : 11;
       v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:${tw}px;height:${th}px;border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;background:var(--panel);cursor:pointer;transition:right .28s ease;color:var(--text-sub);font-size:${tf}px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
       v.panelChevron = open ? '\u25B8' : '\u25C2';
+      // desktop: hand grows, situation log fixed at ~1/5 of the panel
+      v.handSectionStyle = "padding:12px 16px;border-bottom:1px solid var(--border);flex:1;min-height:0;overflow:auto;";
+      v.logSectionStyle = "flex:0 0 20%;min-height:0;display:flex;flex-direction:column;border-top:1px solid var(--border);";
+      v.showLogInline = true;
+      v.showLogButton = false;
     }
     const map = this.chart;
     const px = {};
@@ -1126,7 +1284,7 @@ class Component extends DCLogic {
       for (const [a, b] of E.EDGES) {
         const ca = E.CITIES[a], cb = E.CITIES[b];
         if (Math.abs(ca.lon - cb.lon) > 180) {
-          // crosses the antimeridian — split at ±180 with interpolated latitude
+          // crosses the antimeridian â€” split at Â±180 with interpolated latitude
           const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
           const span = (w.lon + 360) - e2.lon;
           const latAt180 = e2.lat + (w.lat - e2.lat) * ((180 - e2.lon) / span);
@@ -1199,6 +1357,7 @@ class Component extends DCLogic {
     if (v.showTravel) {
       const tp = px[ui.travel.city];
       v.travelX = tp.x; v.travelY = tp.y; v.travelHex = ui.travel.hex; v.travelNum = ui.travel.num;
+      v.travelBoat = ui.travel.mode === 'boat'; v.travelCar = ui.travel.mode === 'car';
     }
 
     // current player panel
@@ -1207,11 +1366,12 @@ class Component extends DCLogic {
     v.curRoleHex = E.ROLES[cur.role].hex;
     v.curCity = E.CITIES[cur.city].name;
     v.curBadgeStyle = `width:30px;height:30px;border-radius:50%;background:${E.ROLES[cur.role].hex};color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;`;
-    v.actionPips = [0, 1, 2, 3].map(i => ({
+    const pipCount = Math.max(4, g.actionsLeft);
+    v.actionPips = Array.from({ length: pipCount }, (_, i) => ({
       style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:var(--border);'}`,
     }));
     v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
-    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} · ${p.name}` }));
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
     v.actPawnValue = ui.actPawn;
 
     // action buttons
@@ -1229,6 +1389,22 @@ class Component extends DCLogic {
     const sOpts = acting ? E.shareOptions(g) : [];
     v.shareDisabled = !sOpts.length; v.shareWhy = sOpts.length ? '' : 'Requires another official in your city with a matching file'; v.shareStyle = btn(sOpts.length > 0);
     v.passDisabled = !acting; v.passStyle = btn(acting, 'var(--text-mute)');
+
+    // special rules â€” Kiss / Hug (only when unlocked)
+    v.showSpecial = this.state.unlocked;
+    if (this.state.unlocked) {
+      const mates = acting ? E.cityCompanions(g) : [];
+      const canAffection = acting && mates.length > 0;
+      v.affectionDisabled = !canAffection;
+      v.affectionWhy = canAffection ? '' : 'Needs another official in your city';
+      v.onKiss = this.onKiss; v.onHug = this.onHug;
+      v.kissStyle = btn(canAffection, '#D6336C');
+      v.hugStyle = btn(canAffection, '#E8590C');
+    }
+
+    // situation log popup (mobile)
+    v.onOpenLog = this.onOpenLog; v.onCloseLog = this.onCloseLog;
+    v.showLogModal = ui.logModalOpen;
 
     // hand
     v.handCount = cur.hand.length;
@@ -1249,7 +1425,16 @@ class Component extends DCLogic {
 
     // log
     const logColors = { bad: '#B42318', good: '#0B7F6E', infect: '#B54708', event: '#5B5BD6', move: 'var(--text-sub)', draw: 'var(--text-sub)', sys: 'var(--text-mute)' };
-    v.logEntries = g.log.slice(0, 120).map(e => {
+    const catOf = (kind) => (kind === 'infect' || kind === 'bad') ? 'infection'
+      : (kind === 'move' || kind === 'good' || kind === 'event' || kind === 'draw') ? 'player' : 'sys';
+    const logFilter = ui.logFilter || 'timeline';
+    v.logFilters = [['infection', 'Infection'], ['player', 'Player'], ['timeline', 'Timeline']].map(([k, label]) => ({
+      label, onClick: () => this.onLogFilter(k),
+      style: `border:1px solid ${logFilter === k ? '#0E9F8A' : 'var(--border)'};background:${logFilter === k ? '#0E9F8A' : 'var(--surface2)'};color:${logFilter === k ? '#fff' : 'var(--text-sub)'};border-radius:20px;padding:3px 11px;font-size:10px;font-weight:600;letter-spacing:.4px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;`,
+    }));
+    let logSrc = g.log.slice(0, 160);
+    if (logFilter !== 'timeline') logSrc = logSrc.filter(e => catOf(e.kind) === logFilter);
+    v.logEntries = logSrc.slice(0, 120).map(e => {
       const who = g.players.find(p => p.name && e.text.includes(p.name));
       const hex = who ? E.ROLES[who.role].hex : null;
       return {
@@ -1266,7 +1451,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding \u2014 click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet \u2014 click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol — click a city to clear & shield it' : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding \u2014 click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet \u2014 click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol â€” click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
     const queue = ui.newsQueue || [];
     v.showNews = queue.length > 0;
@@ -1373,3 +1558,4 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
+

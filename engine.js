@@ -115,6 +115,17 @@ export const EDGES = [
   ['tokyo','osaka'],
 ];
 
+// overland edges that actually cross open water — traversed by boat
+export const SEA_EDGES = new Set([
+  'seattle|tokyo','sanfrancisco|tokyo','sanfrancisco|manila',
+  'newyork|london','newyork|paris','london|casablanca',
+  'saopaulo|lagos','nairobi|mumbai','chennai|jakarta',
+  'hochiminh|manila','jakarta|sydney','manila|sydney','manila|taipei',
+]);
+export function isSeaRoute(a, b) {
+  return SEA_EDGES.has(a + '|' + b) || SEA_EDGES.has(b + '|' + a);
+}
+
 export const ADJ = {};
 for (const id of Object.keys(CITIES)) ADJ[id] = [];
 for (const [a, b] of EDGES) { ADJ[a].push(b); ADJ[b].push(a); }
@@ -150,7 +161,6 @@ export const EVENTS = {
   model:    { name: 'Predictive Model', desc: 'Inspect the top 6 infection cards and rearrange them. The model is always right, retroactively.' },
   bubble:   { name: 'Contact Bubble', desc: 'Remove one city from the infection discard pile from the game. That neighborhood simply stopped answering.' },
   masking:  { name: 'Successful Masking Protocol', desc: 'Clear ALL infection cubes from one city, then shield it from new infection for 3 turns. Turns out the masks worked.' },
-  antivax:  { name: 'Anti-Vaxxers Unite', desc: 'A random city gains 1 infection cube and refuses all treatment for 1 turn. They did their own research.' },
 };
 
 // ---- Deck helpers -----------------------------------------------------
@@ -186,6 +196,7 @@ export function newGame(playerDefs, epidemics) {
     masked: {}, noTreat: {},
     news: null, newsSeq: 0,
     engineerFlightUsed: false,
+    nextTurnDelta: {}, // playerIdx -> +/- actions applied at the start of their next turn (special rules)
     log: [], effects: [], effectSeq: 0,
     lossReason: null,
     pending: null, // {type:'draw'|'infect'|..., ...}
@@ -331,7 +342,7 @@ export function moveOptions(g, pawnIdx, dest) {
   if (destCard) opts.push({ how: 'direct', label: 'Direct flight', discard: destCard.uid, card: dest });
   const hereCard = actor.hand.find(c => c.type === 'city' && c.city === p.city);
   if (hereCard) opts.push({ how: 'charter', label: 'Charter flight', discard: hereCard.uid, card: p.city });
-  if (g.stations.includes(p.city) && g.stations.includes(dest)) opts.push({ how: 'shuttle', label: 'Lab shuttle' });
+  if (g.stations.includes(p.city) && g.stations.includes(dest)) opts.push({ how: 'shuttle', label: 'Lab Airlift' });
   if (actor.role === 'engineer' && pawnIdx === g.current && !g.engineerFlightUsed && g.stations.includes(p.city)) {
     const anyCity = actor.hand.find(c => c.type === 'city');
     if (anyCity && !opts.some(o => o.how === 'direct')) opts.push({ how: 'engineerFly', label: 'Engineer dispatch (discard any city card)' });
@@ -344,7 +355,7 @@ export function moveOptions(g, pawnIdx, dest) {
 }
 
 export function doMove(g, pawnIdx, dest, opt, chosenUid) {
-  const labels = { drive: 'travels overland', direct: 'flies direct', charter: 'charters a flight', shuttle: 'shuttles between labs', engineerFly: 'is dispatched', rendezvous: 'is redeployed' };
+  const labels = { drive: 'travels overland', direct: 'flies direct', charter: 'charters a flight', shuttle: 'airlifts between labs', engineerFly: 'is dispatched', rendezvous: 'is redeployed' };
   let discard = opt.discard || null;
   if (opt.how === 'engineerFly') { discard = chosenUid; g.engineerFlightUsed = true; }
   movePawn(g, pawnIdx, dest, labels[opt.how], discard);
@@ -460,6 +471,29 @@ export function doShare(g, opt) {
   if (taker.hand.length > HAND_LIMIT) forceDiscard(g, taker.i);
 }
 
+// ---- Special rules: Kiss & Hug (only active while unlocked) ----------
+export function cityCompanions(g) {
+  const actor = g.players[g.current];
+  return g.players.filter(p => p.i !== actor.i && p.city === actor.city);
+}
+export function doKiss(g, targetIdx) {
+  const a = g.players[g.current];
+  const b = g.players[targetIdx];
+  if (!g.nextTurnDelta) g.nextTurnDelta = {};
+  g.nextTurnDelta[targetIdx] = (g.nextTurnDelta[targetIdx] || 0) + 1;
+  log(g, 'good', `${a.name} plants a kiss on ${b.name} in ${CITIES[a.city].name}. ${b.name} gets +1 action next turn.`);
+  spend(g);
+}
+export function doHug(g, targetIdx) {
+  const a = g.players[g.current];
+  const b = g.players[targetIdx];
+  if (!g.nextTurnDelta) g.nextTurnDelta = {};
+  g.actionsLeft += 1;
+  g.nextTurnDelta[targetIdx] = (g.nextTurnDelta[targetIdx] || 0) - 1;
+  log(g, 'good', `${b.name} hugs ${a.name} and gifts an action — ${a.name} now has ${g.actionsLeft}, ${b.name} will start next turn with one fewer.`);
+  // no action spent; the hug is a transfer, not an action
+}
+
 export function doPass(g) {
   log(g, 'sys', `${g.players[g.current].name} passes. Strategic patience, allegedly.`);
   startDraw(g);
@@ -570,7 +604,11 @@ export function nextTurn(g) {
   for (const c of Object.keys(g.noTreat)) { if (--g.noTreat[c] <= 0) delete g.noTreat[c]; }
   g.current = (g.current + 1) % g.players.length;
   g.turn++;
-  g.actionsLeft = 4;
+  const delta = (g.nextTurnDelta && g.nextTurnDelta[g.current]) || 0;
+  g.actionsLeft = Math.max(1, 4 + delta);
+  if (g.nextTurnDelta) delete g.nextTurnDelta[g.current];
+  if (delta > 0) log(g, 'good', `${g.players[g.current].name} starts with ${g.actionsLeft} actions (+${delta} from earlier affection).`);
+  else if (delta < 0) log(g, 'sys', `${g.players[g.current].name} starts with only ${g.actionsLeft} actions (gave one away earlier).`);
   g.engineerFlightUsed = false;
   g.phase = 'actions';
   g.pending = null;
@@ -642,17 +680,6 @@ export function eventMasking(g, playerIdx, city) {
   effect(g, 'treat', city, null);
   log(g, 'good', `Successful Masking Protocol in ${CITIES[city].name}: ${cleared} cube${cleared === 1 ? '' : 's'} cleared, shielded for 3 turns.`);
 }
-export function eventAntiVax(g, playerIdx) {
-  playEvent(g, playerIdx, 'antivax');
-  const ids = Object.keys(CITIES);
-  const city = ids[Math.floor(Math.random() * ids.length)];
-  const color = CITIES[city].color;
-  g.noTreat[city] = 1;
-  effect(g, 'outbreak', city, color);
-  log(g, 'event', `Anti-Vaxxers Unite in ${CITIES[city].name}: +1 ${STRAINS[color].name} cube, no treatment for 1 turn. They did their own research.`);
-  addCubes(g, city, color, 1, new Set());
-}
-
 // ---- Satirical infection headlines (comedy only, no gameplay effect) ----
 const CITY_NEWS = {
   seattle: ['Seattle cluster traced to one shared oat-milk frother.', 'Outbreak spreads through a 4-hour line for a new coffee drop.'],
