@@ -531,6 +531,18 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             </button>
           </div>
 
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 0 12px;border-bottom:1px solid var(--border);">
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:600;">Player marker</div>
+              <div style="font-size:11.5px;color:var(--text-mute);">Show a role symbol or a number in each pawn.</div>
+            </div>
+            <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px;">
+              <sc-for list="{{ pawnStyleOpts }}" as="ps" hint-placeholder-count="2">
+                <button onClick="{{ ps.onClick }}" style="{{ ps.style }}">{{ ps.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
           <div style="padding:14px 0 12px;border-bottom:1px solid var(--border);">
             <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
               <div style="flex:1;font-size:13.5px;font-weight:600;">Player icon size</div>
@@ -560,7 +572,7 @@ class Component extends DCLogic {
     lock: { open: false, input: '', error: false },
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
-    settings: { dark: false, pawnScale: 1, pinScale: 1 },
+    settings: { dark: false, pawnScale: 1, pinScale: 1, pawnStyle: 'icon' },
     ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false },
   };
 
@@ -831,6 +843,9 @@ class Component extends DCLogic {
 
   setUi(patch) { Object.assign(this.state.ui, patch); this.setState({ ui: this.state.ui }); }
 
+  ROLE_GLYPH = { nurse: '\u271A', vaccinologist: '\uD83D\uDC89', analyst: '\uD83D\uDCCA', logistics: '\uD83D\uDE9A', engineer: '\uD83D\uDD27', quarantine: '\uD83D\uDEE1\uFE0F' };
+  pawnMark(role, num) { return (this.state.settings.pawnStyle === 'icon') ? (this.ROLE_GLYPH[role] || (num)) : String(num); }
+
   syncNews() {
     const g = this.state.g;
     if (!g) return;
@@ -1063,6 +1078,7 @@ class Component extends DCLogic {
   }
   onToggleDark = () => this.setSetting({ dark: !this.state.settings.dark });  onPawnScale = (e) => this.setSetting({ pawnScale: +e.target.value });
   onPinScale = (e) => this.setSetting({ pinScale: +e.target.value });
+  onPawnStyle = (mode) => this.setSetting({ pawnStyle: mode });
   onLogFilter = (k) => this.setUi({ logFilter: k });
   onOpenLog = () => this.setUi({ logModalOpen: true });
   onCloseLog = () => this.setUi({ logModalOpen: false });
@@ -1220,6 +1236,12 @@ class Component extends DCLogic {
     const dark = this.state.settings.dark;
     v.pawnScale = this.state.settings.pawnScale;
     v.pinScale = this.state.settings.pinScale;
+    const psMode = this.state.settings.pawnStyle || 'icon';
+    v.onPawnStyle = this.onPawnStyle;
+    v.pawnStyleOpts = [['icon', 'Symbol'], ['number', 'Number']].map(([k, label]) => ({
+      label, onClick: () => this.onPawnStyle(k),
+      style: `border:none;border-radius:6px;padding:6px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;${psMode === k ? 'background:#0E9F8A;color:#fff;' : 'background:transparent;color:var(--text-sub);'}`,
+    }));
     v.pawnScaleLabel = `${Math.round(this.state.settings.pawnScale * 100)}%`;
     v.pinScaleLabel = `${Math.round(this.state.settings.pinScale * 100)}%`;
     v.darkToggleStyle = `width:46px;height:26px;border-radius:13px;border:none;cursor:pointer;padding:0;position:relative;transition:background .2s ease;background:${dark ? '#0E9F8A' : 'var(--border)'};`;
@@ -1327,8 +1349,8 @@ class Component extends DCLogic {
         label: (isStation ? '\u25A3 ' : '') + c.name,
         showLabel: showLabels, dotStyle: dot, cubes,
         pawns: g.players.filter(q => q.city === id && !(ui.travel && ui.travel.pawn === q.i) && !(ui.flight && ui.flight.pawn === q.i)).map(q => ({
-          num: q.i + 1, name: q.name,
-          style: `width:${pawnSz}px;height:${pawnSz}px;border-radius:50%;background:${E.ROLES[q.role].hex};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(20,24,29,.35);color:#fff;font-size:${pawnFs}px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;flex-shrink:0;`,
+          num: this.pawnMark(q.role, q.i + 1), name: q.name,
+          style: `width:${pawnSz}px;height:${pawnSz}px;border-radius:50%;background:${E.ROLES[q.role].hex};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(20,24,29,.35);color:#fff;font-size:${psMode === 'icon' ? Math.max(7, Math.round(pawnSz * 0.6)) : pawnFs}px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;flex-shrink:0;line-height:1;`,
         })),
         onClick: () => this.onCity(id),
       };
@@ -1361,7 +1383,7 @@ class Component extends DCLogic {
     }
 
     // current player panel
-    v.curName = cur.name; v.curNum = cur.i + 1;
+    v.curName = cur.name; v.curNum = this.pawnMark(cur.role, cur.i + 1);
     v.curRoleName = E.ROLES[cur.role].name;
     v.curRoleHex = E.ROLES[cur.role].hex;
     v.curCity = E.CITIES[cur.city].name;
@@ -1417,7 +1439,7 @@ class Component extends DCLogic {
     });
     const showOthers = this.props.showOtherHands ?? true;
     v.others = showOthers ? g.players.filter(p => p.i !== cur.i).map(p => ({
-      num: p.i + 1, name: p.name,
+      num: this.pawnMark(p.role, p.i + 1), name: p.name,
       badgeStyle: `width:18px;height:18px;border-radius:50%;background:${E.ROLES[p.role].hex};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;flex-shrink:0;`,
       cards: p.hand.filter(c => c.type === 'city').map(c => ({ hex: E.STRAINS[c.color].hex, label: E.CITIES[c.city].name })),
       events: p.hand.filter(c => c.type === 'event').map(c => ({ label: E.EVENTS[c.event].name, onPlay: () => this.playEventFrom(p.i, c.event) })),
