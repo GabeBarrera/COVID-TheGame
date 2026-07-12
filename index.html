@@ -24,6 +24,10 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 @keyframes fadeUp{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @keyframes pulseRing{0%,100%{box-shadow:0 0 0 2px rgba(14,159,138,.6)}50%{box-shadow:0 0 0 7px rgba(14,159,138,0)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes confettiFall{0%{transform:translateY(-12vh) rotate(0deg);opacity:1}100%{transform:translateY(112vh) rotate(720deg);opacity:.9}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}10%{transform:translateX(-12px)}20%{transform:translateX(11px)}30%{transform:translateX(-9px)}40%{transform:translateX(8px)}50%{transform:translateX(-6px)}60%{transform:translateX(5px)}70%{transform:translateX(-3px)}80%{transform:translateX(2px)}90%{transform:translateX(-1px)}}
+@keyframes redFlash{0%{opacity:0}15%{opacity:.5}100%{opacity:0}}
+@keyframes winGlow{0%,100%{opacity:.35}50%{opacity:.7}}
 </style>
 </helmet>
 <div style="width:100vw;height:100vh;display:flex;flex-direction:column;font-family:'IBM Plex Sans',sans-serif;color:var(--text);overflow:hidden;background:var(--app-bg);">
@@ -75,6 +79,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
         </sc-if>
 
         <button onClick="{{ startGame }}" style="margin-top:24px;width:100%;background:#0E9F8A;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#0B7F6E;">Convene the task force</button>
+        <sc-if value="{{ hasSave }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ onLoadGame }}" style="margin-top:10px;width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="border-color:#0E9F8A;color:#0E9F8A;"><span style="opacity:.7;">&#8635;</span> Resume saved game <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-mute);letter-spacing:.5px;">{{ saveMeta }}</span></button>
+        </sc-if>
         <div style="font-size:11.5px;color:var(--text-mute);text-align:center;margin-top:10px;">Win: vaccinate all four strains. Lose: 8 outbreaks, an exhausted cube supply, or an empty briefing deck.</div>
       </div>
     </div>
@@ -406,11 +413,16 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ pickerSub }}</div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ pickerItems }}" as="pi" hint-placeholder-count="3">
-              <button onClick="{{ pi.onClick }}" style="display:flex;align-items:center;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
-                <div style="width:9px;height:9px;border-radius:2px;background:{{ pi.hex }};flex-shrink:0;"></div>
-                <span style="flex:1;">{{ pi.label }}</span>
-                <span style="font-size:11px;color:var(--text-mute);font-weight:400;">{{ pi.sub }}</span>
-              </button>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <button onClick="{{ pi.onClick }}" style="flex:1;display:flex;align-items:center;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
+                  <div style="width:9px;height:9px;border-radius:2px;background:{{ pi.hex }};flex-shrink:0;"></div>
+                  <span style="flex:1;">{{ pi.label }}</span>
+                  <span style="font-size:11px;color:var(--text-mute);font-weight:400;">{{ pi.sub }}</span>
+                </button>
+                <sc-if value="{{ pi.onPlay }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ pi.onPlay }}" title="Play this event instead of discarding it" style="flex-shrink:0;border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:6px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#F0FAF8;">Use</button>
+                </sc-if>
+              </div>
             </sc-for>
           </div>
           <sc-if value="{{ pickerCancellable }}" hint-placeholder-val="{{ true }}">
@@ -477,13 +489,64 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     </sc-if>
 
     <sc-if value="{{ showEnd }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;background:rgba(20,24,29,.7);z-index:200;display:flex;align-items:center;justify-content:center;">
-        <div style="background:var(--panel);border-radius:14px;padding:40px 44px;width:480px;max-width:92vw;text-align:center;animation:fadeUp .35s ease-out;">
+      <div style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:{{ endBackdrop }};"></div>
+        <sc-if value="{{ endWon }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
+            <sc-for list="{{ confetti }}" as="cf" hint-placeholder-count="0">
+              <div style="{{ cf.style }}"></div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ endLost }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:#B42318;pointer-events:none;animation:redFlash 1s ease-out forwards;"></div>
+        </sc-if>
+        <div style="{{ endDialogStyle }}">
+          <button onClick="{{ onCloseEnd }}" title="Close and review the map" style="position:absolute;top:14px;right:14px;border:none;background:var(--surface2);color:var(--text-sub);border-radius:7px;width:30px;height:30px;line-height:1;font-size:14px;cursor:pointer;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:3px;color:{{ endHue }};font-weight:700;margin-bottom:10px;">{{ endKicker }}</div>
           <div style="font-size:28px;font-weight:700;margin-bottom:12px;">{{ endTitle }}</div>
-          <div style="font-size:14px;color:var(--text-sub);line-height:1.6;margin-bottom:24px;">{{ endBody }}</div>
-          <button onClick="{{ onRestart }}" style="background:#14181D;color:#fff;border:none;border-radius:8px;padding:13px 34px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reconvene task force</button>
+          <div style="font-size:13.5px;color:var(--text-sub);line-height:1.6;margin-bottom:22px;">{{ endBody }}</div>
+
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text-mute);text-align:left;margin-bottom:10px;">AFTER-ACTION REPORT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <sc-for list="{{ endStats }}" as="st" hint-placeholder-count="6">
+              <div style="border:1px solid var(--border);background:var(--surface2);border-radius:9px;padding:11px 13px;text-align:left;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;line-height:1;color:{{ st.hue }};">{{ st.value }}</div>
+                <div style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:5px;">{{ st.label }}</div>
+                <div style="font-size:10px;color:var(--text-mute);margin-top:1px;">{{ st.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasVaccines }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid var(--border);border-radius:9px;padding:10px 13px;text-align:left;margin-bottom:18px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);margin-bottom:7px;">VACCINE TIMELINE</div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <sc-for list="{{ vaccineLog }}" as="vl" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                    <div style="width:9px;height:9px;border-radius:2px;background:{{ vl.hex }};flex-shrink:0;"></div>
+                    <span style="font-weight:600;">{{ vl.name }}</span>
+                    <span style="color:var(--text-mute);">{{ vl.detail }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;gap:8px;">
+            <button onClick="{{ onCloseEnd }}" style="flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:13px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;color:#0E9F8A;">Review the map</button>
+            <button onClick="{{ onRestart }}" style="flex:1;background:#14181D;color:#fff;border:none;border-radius:8px;padding:13px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">Reconvene task force</button>
+          </div>
         </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== review-mode reopen banner (game over, popup closed) ===== -->
+    <sc-if value="{{ showReopen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:190;display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--border);border-top:3px solid {{ endHue }};border-radius:10px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px rgba(20,24,29,.22);animation:fadeUp .3s ease-out;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:{{ endHue }};font-weight:700;">{{ endKicker }} &middot; REVIEW MODE</div>
+        <button onClick="{{ onReopenEnd }}" style="border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;color:#0E9F8A;">View summary</button>
+        <button onClick="{{ onRestart }}" style="border:none;background:#14181D;color:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;">New game</button>
       </div>
     </sc-if>
 
@@ -531,6 +594,16 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
             </button>
           </div>
 
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:600;">Sound effects</div>
+              <div style="font-size:11.5px;color:var(--text-mute);">Alarms, chimes, and card flips.</div>
+            </div>
+            <button onClick="{{ onToggleSound }}" title="Toggle sound" style="{{ soundToggleStyle }}">
+              <div style="{{ soundKnobStyle }}"></div>
+            </button>
+          </div>
+
           <div style="display:flex;align-items:center;gap:12px;padding:14px 0 12px;border-bottom:1px solid var(--border);">
             <div style="flex:1;">
               <div style="font-size:13.5px;font-weight:600;">Player marker</div>
@@ -572,8 +645,8 @@ class Component extends DCLogic {
     lock: { open: false, input: '', error: false },
     setup: { players: [{ name: 'Dr. Osei', role: 'nurse' }, { name: 'Dr. Ferrante', role: 'vaccinologist' }], epidemics: 5 },
     g: null,
-    settings: { dark: false, pawnScale: 1, pinScale: 1, pawnStyle: 'icon' },
-    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false },
+    settings: { dark: false, pawnScale: 1, pinScale: 1, pawnStyle: 'icon', sound: true },
+    ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false, endClosed: false },
   };
 
   componentDidMount() {
@@ -803,11 +876,18 @@ class Component extends DCLogic {
   mut(fn) {
     const g = this.state.g;
     fn(g);
+    // a forced discard can also be satisfied by PLAYING an event card â€” once the
+    // holder is back within the hand limit, resume the turn flow like doDiscard would.
+    if (g.phase === 'discard' && g.pending?.type === 'discard'
+        && g.players[g.pending.player].hand.length <= this.E.HAND_LIMIT) {
+      this.E.resolveDiscardContinuation(g);
+    }
     const ui = this.state.ui;
     if (g.current !== ui.lastCurrent) { ui.lastCurrent = g.current; ui.actPawn = g.current; }
     if (g.phase === 'infect') this.scheduleInfect();
     this.scheduleFxCleanup(g);
     this.syncNews();
+    this.pumpSounds(g);
     this.setState({ g, ui });
   }
 
@@ -819,6 +899,7 @@ class Component extends DCLogic {
       this.E.infectStep(g);
       this.scheduleFxCleanup(g);
       if (g.phase !== 'infect') { clearInterval(this._it); this._it = null; }
+      this.pumpSounds(g);
       this.setState({ g });
       this.syncNews();
     }, this.infectMs());
@@ -842,6 +923,89 @@ class Component extends DCLogic {
   }
 
   setUi(patch) { Object.assign(this.state.ui, patch); this.setState({ ui: this.state.ui }); }
+
+  // ---------- sound ----------
+  resetSfx() { this._sfxSeen = 0; this._sfxCured = undefined; this._sfxEnd = null; }
+  ensureAudio() {
+    if (this._actx) return this._actx;
+    try { this._actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this._actx = null; }
+    return this._actx;
+  }
+  playSound(type) {
+    if (this.state.settings.sound === false) return;
+    const ctx = this.ensureAudio(); if (!ctx) return;
+    if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    const now = ctx.currentTime;
+    const tone = (freq, start, dur, wave = 'sine', gain = 0.14) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = wave; o.frequency.value = freq;
+      o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, now + start);
+      g.gain.linearRampToValueAtTime(gain, now + start + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+      o.start(now + start); o.stop(now + start + dur + 0.02);
+    };
+    switch (type) {
+      case 'flip':   tone(520, 0, 0.07, 'triangle', 0.11); tone(760, 0.05, 0.06, 'triangle', 0.09); break;
+      case 'treat':  tone(680, 0, 0.11, 'sine', 0.13); break;
+      case 'build':  tone(150, 0, 0.18, 'square', 0.11); tone(110, 0.05, 0.16, 'square', 0.09); break;
+      case 'infect': tone(300, 0, 0.08, 'sine', 0.05); break;
+      case 'alarm':  tone(233, 0, 0.16, 'sawtooth', 0.15); tone(185, 0.15, 0.2, 'sawtooth', 0.15); tone(233, 0.32, 0.18, 'sawtooth', 0.13); break;
+      case 'cure':   [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.08, 0.28, 'sine', 0.12)); break;
+      case 'win':    [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.11, 0.5, 'triangle', 0.13)); break;
+      case 'lose':   [440, 392, 330, 247].forEach((f, i) => tone(f, i * 0.14, 0.5, 'sawtooth', 0.12)); break;
+    }
+  }
+  soundForEffect(t) {
+    if (t === 'outbreak') return this.playSound('alarm');
+    if (t === 'treat') return this.playSound('treat');
+    if (t === 'build') return this.playSound('build');
+    if (t === 'infect') return this.playSound('infect');
+  }
+  pumpSounds(g) {
+    if (!g) return;
+    if (this._sfxSeen === undefined) this.resetSfx();
+    for (const f of g.effects) {
+      const n = parseInt((f.id || '').slice(2), 10);
+      if (!isNaN(n) && n > this._sfxSeen) { this._sfxSeen = n; this.soundForEffect(f.type); }
+    }
+    const curedN = this.E.COLORS.filter(c => g.cured[c]).length;
+    if (this._sfxCured === undefined) this._sfxCured = curedN;
+    if (curedN > this._sfxCured) this.playSound('cure');
+    this._sfxCured = curedN;
+    if (g.phase === 'won' && this._sfxEnd !== 'won') { this._sfxEnd = 'won'; this.playSound('win'); }
+    if (g.phase === 'lost' && this._sfxEnd !== 'lost') { this._sfxEnd = 'lost'; this.playSound('lose'); }
+  }
+  onToggleSound = () => {
+    const on = !(this.state.settings.sound === false);
+    this.setSetting({ sound: !on });
+    if (!on) this.playSound('treat');
+  };
+
+  // ---------- load game ----------
+  savedInfo() {
+    try {
+      const raw = localStorage.getItem('covid-game_save');
+      if (!raw) return { exists: false };
+      const p = JSON.parse(raw);
+      if (!p || !p.g) return { exists: false };
+      return { exists: true, meta: `TURN ${p.g.turn || 1}` };
+    } catch (e) { return { exists: false }; }
+  }
+  onLoadGame = () => {
+    let payload;
+    try { payload = JSON.parse(localStorage.getItem('covid-game_save') || 'null'); }
+    catch (e) { return this.toast('Saved game is corrupted.'); }
+    if (!payload || !payload.g) return this.toast('No saved game found.');
+    this.resetSfx(); this._confetti = null;
+    this._newsId = null; this._newsTurn = undefined; this._lastPhase = payload.g.phase;
+    const cur = payload.g.current || 0;
+    const settings = { dark: false, pawnScale: 1, pinScale: 1, pawnStyle: 'icon', sound: true, ...(payload.settings || {}) };
+    this.setState({
+      screen: 'game', g: payload.g, settings,
+      ui: { modal: null, mode: null, toast: null, actPawn: cur, drawShown: null, lastCurrent: cur, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false, endClosed: false },
+    }, () => this.applyTheme());
+  };
 
   ROLE_GLYPH = { nurse: '\u271A', vaccinologist: '\uD83D\uDC89', analyst: '\uD83D\uDCCA', logistics: '\uD83D\uDE9A', engineer: '\uD83D\uDD27', quarantine: '\uD83D\uDEE1\uFE0F' };
   pawnMark(role, num) { return (this.state.settings.pawnStyle === 'icon') ? (this.ROLE_GLYPH[role] || (num)) : String(num); }
@@ -879,7 +1043,8 @@ class Component extends DCLogic {
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
     this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions';
-    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false } });
+    this.resetSfx(); this._confetti = null;
+    this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false, endClosed: false } });
   };
 
   // ---------- board ----------
@@ -1034,6 +1199,7 @@ class Component extends DCLogic {
   onReveal = () => {
     const g = this.state.g;
     const card = g.pending.cards[g.pending.idx];
+    this.playSound('flip');
     this.setUi({ drawShown: card });
     this.mut(gg => this.E.resolveDrawnCard(gg));
   };
@@ -1053,7 +1219,7 @@ class Component extends DCLogic {
   cancelModal = () => this.setUi({ modal: null });
   stop = (e) => e.stopPropagation();
 
-  onRestart = () => this.setState({ screen: 'setup', g: null, ui: { ...this.state.ui, menuOpen: false, labsOpen: false, settingsOpen: false } });
+  onRestart = () => { this._confetti = null; this.resetSfx(); this.setState({ screen: 'setup', g: null, ui: { ...this.state.ui, endClosed: false, menuOpen: false, labsOpen: false, settingsOpen: false } }); };
 
   // ---------- menu / settings ----------
   onMenuToggle = () => this.setUi({ menuOpen: !this.state.ui.menuOpen, labsOpen: false });
@@ -1188,6 +1354,10 @@ class Component extends DCLogic {
       onRole: (e) => { p.role = e.target.value; this.setState({ setup }); },
       onRemove: () => { setup.players.splice(i, 1); this.setState({ setup }); },
     }));
+    const save = this.savedInfo();
+    v.hasSave = save.exists;
+    v.saveMeta = save.meta || '';
+    v.onLoadGame = this.onLoadGame;
     if (!v.isGame) return v;
 
     // ----- game vals -----
@@ -1246,6 +1416,10 @@ class Component extends DCLogic {
     v.pinScaleLabel = `${Math.round(this.state.settings.pinScale * 100)}%`;
     v.darkToggleStyle = `width:46px;height:26px;border-radius:13px;border:none;cursor:pointer;padding:0;position:relative;transition:background .2s ease;background:${dark ? '#0E9F8A' : 'var(--border)'};`;
     v.darkKnobStyle = `position:absolute;top:3px;left:${dark ? '23px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s ease;box-shadow:0 1px 3px rgba(20,24,29,.3);`;
+    const snd = this.state.settings.sound !== false;
+    v.onToggleSound = this.onToggleSound;
+    v.soundToggleStyle = `width:46px;height:26px;border-radius:13px;border:none;cursor:pointer;padding:0;position:relative;transition:background .2s ease;background:${snd ? '#0E9F8A' : 'var(--border)'};`;
+    v.soundKnobStyle = `position:absolute;top:3px;left:${snd ? '23px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s ease;box-shadow:0 1px 3px rgba(20,24,29,.3);`;
     v.rangeStyle = "width:100%;accent-color:#0E9F8A;cursor:pointer;";
     v.rateCells = E.INFECTION_RATES.map((r, i) => ({
       v: r,
@@ -1504,18 +1678,22 @@ class Component extends DCLogic {
       v.pickerTitle = modal.title; v.pickerSub = modal.sub;
       v.pickerItems = modal.items; v.pickerCancellable = true;
     }
-    // discard modal reuses picker
-    if (g.phase === 'discard' && g.pending?.type === 'discard') {
+    // discard modal reuses picker (hidden while an event it triggers is targeting/choosing)
+    if (g.phase === 'discard' && g.pending?.type === 'discard' && !ui.mode && !modal) {
       const dp = g.players[g.pending.player];
       v.showPicker = true; v.pickerCancellable = false;
       v.pickerTitle = `${dp.name} is over the hand limit`;
-      v.pickerSub = `Hand limit is 7. Discard down. (${dp.hand.length}/7)`;
-      v.pickerItems = dp.hand.map(c => ({
-        hex: c.type === 'event' ? '#0E9F8A' : E.STRAINS[c.color].hex,
-        label: c.type === 'event' ? E.EVENTS[c.event].name : E.CITIES[c.city].name,
-        sub: c.type === 'event' ? 'EVENT' : E.STRAINS[c.color].name,
-        onClick: () => this.mut(gg => E.doDiscard(gg, dp.i, c.uid)),
-      }));
+      v.pickerSub = `Hand limit is 7 â€” discard a card, or play an event instead. (${dp.hand.length}/7)`;
+      v.pickerItems = dp.hand.map(c => {
+        const item = {
+          hex: c.type === 'event' ? '#0E9F8A' : E.STRAINS[c.color].hex,
+          label: c.type === 'event' ? E.EVENTS[c.event].name : E.CITIES[c.city].name,
+          sub: c.type === 'event' ? 'DISCARD' : E.STRAINS[c.color].name,
+          onClick: () => this.mut(gg => E.doDiscard(gg, dp.i, c.uid)),
+        };
+        if (c.type === 'event') item.onPlay = () => this.playEventFrom(dp.i, c.event);
+        return item;
+      });
     }
     v.showModel = modal?.type === 'model';
     if (v.showModel) {
@@ -1564,16 +1742,53 @@ class Component extends DCLogic {
     }
 
     // end overlay
-    v.showEnd = g.phase === 'won' || g.phase === 'lost';
-    if (v.showEnd) {
-      if (g.phase === 'won') {
+    const over = g.phase === 'won' || g.phase === 'lost';
+    v.endWon = g.phase === 'won';
+    v.endLost = g.phase === 'lost';
+    v.showEnd = over && !ui.endClosed;
+    v.showReopen = over && ui.endClosed;
+    v.onCloseEnd = () => this.setUi({ endClosed: true });
+    v.onReopenEnd = () => this.setUi({ endClosed: false });
+    if (over) {
+      const won = g.phase === 'won';
+      v.endBackdrop = won ? 'rgba(6,40,34,.72)' : 'rgba(30,8,8,.75)';
+      v.endDialogStyle = `position:relative;background:var(--panel);border-radius:14px;padding:34px 34px 28px;width:520px;max-width:94vw;max-height:90vh;overflow:auto;text-align:center;box-shadow:0 24px 60px rgba(20,24,29,.45);${won ? 'animation:fadeUp .4s ease-out;' : 'animation:shakeX .6s ease-out;'}`;
+      if (won) {
         v.endKicker = 'SIMULATION COMPLETE'; v.endHue = '#0E9F8A'; v.endTitle = 'All four strains cured';
         v.endBody = `Humanity wins in ${g.turn} turns with ${g.outbreaks} outbreak${g.outbreaks === 1 ? '' : 's'} on the record. The after-action report will credit "teamwork" and, quietly, luck.`;
       } else {
         v.endKicker = 'SIMULATION FAILED'; v.endHue = '#B42318'; v.endTitle = 'The response collapsed';
         v.endBody = g.lossReason || '';
       }
+      const st = g.stats || { cubesTreated: 0, vaccines: [] };
+      const curedN = E.COLORS.filter(c => g.cured[c]).length;
+      const eradN = E.COLORS.filter(c => g.eradicated[c]).length;
+      v.endStats = [
+        { value: g.turn, label: 'Turns played', sub: `${g.players.length} officials`, hue: 'var(--text)' },
+        { value: `${g.outbreaks}/8`, label: 'Outbreaks', sub: g.outbreaks >= 8 ? 'catastrophic' : g.outbreaks > 0 ? 'contained' : 'none', hue: g.outbreaks >= 4 ? '#B42318' : g.outbreaks > 0 ? '#B54708' : 'var(--text)' },
+        { value: `${curedN}/4`, label: 'Vaccines', sub: eradN ? `${eradN} eradicated` : 'developed', hue: '#0E9F8A' },
+        { value: g.epidemicsDrawn, label: 'Epidemic surges', sub: `of ${g.epidemics} in deck`, hue: '#B54708' },
+        { value: st.cubesTreated || 0, label: 'Cases treated', sub: 'cubes removed', hue: '#0E9F8A' },
+        { value: g.stations.length, label: 'Research labs', sub: `of ${E.MAX_STATIONS} built`, hue: '#06B6D4' },
+      ];
+      const vax = st.vaccines || [];
+      v.hasVaccines = vax.length > 0;
+      v.vaccineLog = vax.map(vv => ({ hex: E.STRAINS[vv.color].hex, name: E.STRAINS[vv.color].name, detail: `turn ${vv.turn} \u00b7 ${vv.by}` }));
+      if (won) {
+        if (!this._confetti) {
+          const cols = ['#0E9F8A', '#2563EB', '#D97706', '#7C3AED', '#DC2626', '#06B6D4'];
+          this._confetti = Array.from({ length: 100 }, () => {
+            const w = 6 + Math.random() * 7, h = 8 + Math.random() * 10;
+            const col = cols[Math.floor(Math.random() * cols.length)];
+            const round = Math.random() < 0.5 ? '2px' : '50%';
+            const dur = 2.6 + Math.random() * 2.4, delay = Math.random() * 2.5;
+            return { style: `position:absolute;top:-12vh;left:${(Math.random() * 100).toFixed(2)}vw;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;background:${col};border-radius:${round};opacity:.9;animation:confettiFall ${dur.toFixed(2)}s linear ${delay.toFixed(2)}s infinite;` };
+          });
+        }
+        v.confetti = this._confetti;
+      } else { v.confetti = []; }
     }
+
     return v;
   }
 }

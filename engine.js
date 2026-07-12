@@ -199,6 +199,7 @@ export function newGame(playerDefs, epidemics) {
     nextTurnDelta: {}, // playerIdx -> +/- actions applied at the start of their next turn (special rules)
     log: [], effects: [], effectSeq: 0,
     lossReason: null,
+    stats: { cubesTreated: 0, vaccines: [] }, // for the after-action summary
     pending: null, // {type:'draw'|'infect'|..., ...}
   };
   for (const id of Object.keys(CITIES)) { g.cubes[id] = { alpha: 0, beta: 0, gamma: 0, delta: 0 }; }
@@ -383,6 +384,7 @@ export function doTreat(g, color) {
   if (g.cured[color] || p.role === 'nurse') n = g.cubes[city][color];
   g.cubes[city][color] -= n;
   g.supply[color] += n;
+  if (g.stats) g.stats.cubesTreated += n;
   effect(g, 'treat', city, color);
   log(g, 'good', `${p.name} treats ${STRAINS[color].name} in ${CITIES[city].name} (−${n} cube${n > 1 ? 's' : ''}).`);
   checkEradication(g, color);
@@ -430,6 +432,7 @@ export function doCure(g, color, uids) {
     g.playerDiscard.push(p.hand.splice(idx, 1)[0]);
   }
   g.cured[color] = true;
+  if (g.stats) g.stats.vaccines.push({ color, turn: g.turn, by: p.name });
   log(g, 'good', `VACCINE DEVELOPED for ${STRAINS[color].name} by ${p.name}. Rollout memo pending.`);
   // nurse passive sweep everywhere she stands
   for (const q of g.players) medicSweep(g, q);
@@ -563,10 +566,18 @@ export function doDiscard(g, playerIdx, uid) {
   const card = p.hand.splice(idx, 1)[0];
   g.playerDiscard.push(card);
   log(g, 'sys', `${p.name} discards ${card.type === 'event' ? EVENTS[card.event].name : CITIES[card.city].name}. Triage hurts.`);
-  if (p.hand.length <= HAND_LIMIT) {
-    if (g.turnEnding) { startInfect(g); }
-    else { g.phase = 'actions'; g.pending = null; } // discard triggered mid-turn by share
-  }
+  resolveDiscardContinuation(g);
+}
+
+// A forced discard can also be cleared by PLAYING an event card. Once the holder
+// is back within the hand limit — however they got there — resume the turn flow.
+export function resolveDiscardContinuation(g) {
+  const pd = g.pending;
+  if (!pd || pd.type !== 'discard') return;
+  const p = g.players[pd.player];
+  if (p.hand.length > HAND_LIMIT) return;
+  if (g.turnEnding) { startInfect(g); }
+  else { g.phase = 'actions'; g.pending = null; } // discard triggered mid-turn by share
 }
 
 // ---- Infect phase -----------------------------------------------------
@@ -677,6 +688,7 @@ export function eventMasking(g, playerIdx, city) {
     if (n > 0) { g.supply[col] += n; g.cubes[city][col] = 0; cleared += n; checkEradication(g, col); }
   }
   g.masked[city] = 3;
+  if (g.stats) g.stats.cubesTreated += cleared;
   effect(g, 'treat', city, null);
   log(g, 'good', `Successful Masking Protocol in ${CITIES[city].name}: ${cleared} cube${cleared === 1 ? '' : 's'} cleared, shielded for 3 turns.`);
 }
