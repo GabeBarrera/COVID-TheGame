@@ -1,4 +1,4 @@
-// COVID: The Game — core data + rules engine (pure-ish: functions mutate a passed game object)
+// COVID: The Game \u2014 core data + rules engine (pure-ish: functions mutate a passed game object)
 
 export const COLORS = ['alpha', 'beta', 'gamma', 'delta'];
 export const STRAINS = {
@@ -31,9 +31,9 @@ export const CITIES = {
   moscow:       C('Moscow', 'alpha', 37.6, 55.8),
   mexicocity:   C('Mexico City', 'beta', -99.1, 19.4),
   miami:        C('Miami', 'beta', -80.2, 25.8),
-  bogota:       C('Bogotá', 'beta', -74.1, 4.7),
+  bogota:       C('Bogot\u00e1', 'beta', -74.1, 4.7),
   lima:         C('Lima', 'beta', -77, -12),
-  saopaulo:     C('São Paulo', 'beta', -46.6, -23.5),
+  saopaulo:     C('S\u00e3o Paulo', 'beta', -46.6, -23.5),
   buenosaires:  C('Buenos Aires', 'beta', -58.4, -34.6),
   casablanca:   C('Casablanca', 'beta', -7.6, 33.6),
   lagos:        C('Lagos', 'beta', 3.4, 6.5),
@@ -115,7 +115,7 @@ export const EDGES = [
   ['tokyo','osaka'],
 ];
 
-// overland edges that actually cross open water — traversed by boat
+// overland edges that actually cross open water \u2014 traversed by boat
 export const SEA_EDGES = new Set([
   'seattle|tokyo','sanfrancisco|tokyo','sanfrancisco|manila',
   'newyork|london','newyork|paris','london|casablanca',
@@ -130,7 +130,7 @@ export const ADJ = {};
 for (const id of Object.keys(CITIES)) ADJ[id] = [];
 for (const [a, b] of EDGES) { ADJ[a].push(b); ADJ[b].push(a); }
 
-// map projection → percentages
+// map projection \u2192 percentages
 export function pos(id) {
   const c = CITIES[id];
   return { x: (c.lon + 180) / 360 * 100 + c.dx, y: (68 - c.lat) / 113 * 100 + c.dy };
@@ -258,7 +258,7 @@ function medicShield(g, city, color) {
 
 export function addCubes(g, city, color, n, chain) {
   if (g.phase === 'lost' || g.phase === 'won') return;
-  if (g.eradicated[color]) { log(g, 'sys', `${STRAINS[color].name} is eradicated — ${CITIES[city].name} shrugs it off.`); return; }
+  if (g.eradicated[color]) { log(g, 'sys', `${STRAINS[color].name} is eradicated \u2014 ${CITIES[city].name} shrugs it off.`); return; }
   if (g.masked[city]) { log(g, 'good', `Masking Protocol shields ${CITIES[city].name} from new ${STRAINS[color].name} cases.`); return; }
   if (quarantined(g, city)) { log(g, 'good', `Quarantine Officer blocks the ${STRAINS[color].name} spread into ${CITIES[city].name}.`); return; }
   if (medicShield(g, city, color)) { log(g, 'good', `Frontline Nurse in ${CITIES[city].name} neutralizes the incoming ${STRAINS[color].name} cases.`); return; }
@@ -290,7 +290,7 @@ function lose(g, reason) {
   g.phase = 'lost';
   g.lossReason = reason;
   g.pending = null;
-  log(g, 'bad', 'GAME OVER — ' + reason);
+  log(g, 'bad', 'GAME OVER \u2014 ' + reason);
 }
 
 function checkEradication(g, color) {
@@ -386,7 +386,7 @@ export function doTreat(g, color) {
   g.supply[color] += n;
   if (g.stats) g.stats.cubesTreated += n;
   effect(g, 'treat', city, color);
-  log(g, 'good', `${p.name} treats ${STRAINS[color].name} in ${CITIES[city].name} (−${n} cube${n > 1 ? 's' : ''}).`);
+  log(g, 'good', `${p.name} treats ${STRAINS[color].name} in ${CITIES[city].name} (\u2212${n} cube${n > 1 ? 's' : ''}).`);
   checkEradication(g, color);
   spend(g);
 }
@@ -410,7 +410,7 @@ export function doBuild(g) {
   }
   g.stations.push(p.city);
   effect(g, 'build', p.city, null);
-  log(g, 'good', `${p.name} opens a research lab in ${CITIES[p.city].name}${chk.free ? ' (no paperwork — Site Engineer)' : ''}.`);
+  log(g, 'good', `${p.name} opens a research lab in ${CITIES[p.city].name}${chk.free ? ' (no paperwork \u2014 Site Engineer)' : ''}.`);
   spend(g);
 }
 
@@ -458,7 +458,7 @@ export function shareOptions(g) {
         : giver.hand.filter(c => c.type === 'city' && c.city === actor.city);
       for (const card of cards) {
         opts.push({ giver: giver.i, taker: taker.i, uid: card.uid, city: card.city, color: card.color,
-          label: `${giver.name} → ${taker.name}: ${CITIES[card.city].name}` });
+          label: `${giver.name} \u2192 ${taker.name}: ${CITIES[card.city].name}` });
       }
     }
   }
@@ -468,6 +468,7 @@ export function doShare(g, opt) {
   const giver = g.players[opt.giver];
   const taker = g.players[opt.taker];
   const idx = giver.hand.findIndex(c => c.uid === opt.uid);
+  if (idx === -1) return; // card is no longer in the giver's hand: abort without spending an action
   taker.hand.push(giver.hand.splice(idx, 1)[0]);
   log(g, 'move', `${giver.name} hands the ${CITIES[opt.city].name} file to ${taker.name}.`);
   spend(g);
@@ -493,7 +494,7 @@ export function doHug(g, targetIdx) {
   if (!g.nextTurnDelta) g.nextTurnDelta = {};
   g.actionsLeft += 1;
   g.nextTurnDelta[targetIdx] = (g.nextTurnDelta[targetIdx] || 0) - 1;
-  log(g, 'good', `${b.name} hugs ${a.name} and gifts an action — ${a.name} now has ${g.actionsLeft}, ${b.name} will start next turn with one fewer.`);
+  log(g, 'good', `${b.name} hugs ${a.name} and gifts an action \u2014 ${a.name} now has ${g.actionsLeft}, ${b.name} will start next turn with one fewer.`);
   // no action spent; the hug is a transfer, not an action
 }
 
@@ -570,7 +571,7 @@ export function doDiscard(g, playerIdx, uid) {
 }
 
 // A forced discard can also be cleared by PLAYING an event card. Once the holder
-// is back within the hand limit — however they got there — resume the turn flow.
+// is back within the hand limit \u2014 however they got there \u2014 resume the turn flow.
 export function resolveDiscardContinuation(g) {
   const pd = g.pending;
   if (!pd || pd.type !== 'discard') return;
@@ -623,7 +624,7 @@ export function nextTurn(g) {
   g.engineerFlightUsed = false;
   g.phase = 'actions';
   g.pending = null;
-  log(g, 'sys', `— ${g.players[g.current].name}'s turn (${ROLES[g.players[g.current].role].name}) —`);
+  log(g, 'sys', `\u2014 ${g.players[g.current].name}'s turn (${ROLES[g.players[g.current].role].name}) \u2014`);
 }
 
 // mark that discard was due at end of turn (before infect)
@@ -667,7 +668,7 @@ export function eventModelApply(g, playerIdx, orderedUids) {
   const rest = g.infectionDeck.slice(0, -6);
   const byUid = {};
   for (const c of top) byUid[c.uid] = c;
-  // orderedUids[0] = next to be drawn → must be last in array
+  // orderedUids[0] = next to be drawn \u2192 must be last in array
   const reordered = orderedUids.slice().reverse().map(u => byUid[u]);
   g.infectionDeck = [...rest, ...reordered];
   log(g, 'good', 'The Predictive Model rearranges fate. Peer review pending.');
@@ -677,7 +678,7 @@ export function eventBubble(g, playerIdx, uid) {
   const idx = g.infectionDiscard.findIndex(c => c.uid === uid);
   const card = g.infectionDiscard.splice(idx, 1)[0];
   g.removedInfection.push(card);
-  log(g, 'good', `${CITIES[card.city].name} forms a contact bubble — its card is removed from the game.`);
+  log(g, 'good', `${CITIES[card.city].name} forms a contact bubble \u2014 its card is removed from the game.`);
 }
 
 export function eventMasking(g, playerIdx, city) {

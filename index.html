@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -246,23 +246,23 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
         <!-- satirical news headline queue -->
         <sc-if value="{{ showNews }}" hint-placeholder-val="{{ false }}">
-          <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;bottom:16px;left:16px;z-index:45;max-width:min(360px,72vw);background:var(--panel);border:1px solid var(--border);border-left:4px solid {{ newsHex }};border-radius:8px;box-shadow:0 10px 30px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
-            <div style="display:flex;align-items:center;gap:8px;background:#B42318;color:#fff;padding:5px 10px;">
-              <div style="width:6px;height:6px;border-radius:50%;background:var(--panel);animation:blink 1s infinite;flex-shrink:0;"></div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:2px;font-weight:700;flex:1;">BREAKING &middot; {{ newsCity }}</div>
+          <div onClick="{{ onNewsPing }}" title="Click to locate on map" style="position:absolute;top:21px;right:21px;z-index:45;max-width:min(468px,72vw);background:var(--panel);border:1px solid var(--border);border-left:5px solid {{ newsHex }};border-radius:10px;box-shadow:0 13px 39px rgba(20,24,29,.18);overflow:hidden;cursor:pointer;animation:fadeUp .3s ease-out;">
+            <div style="display:flex;align-items:center;gap:10px;background:#B42318;color:#fff;padding:7px 13px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--panel);animation:blink 1s infinite;flex-shrink:0;"></div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:2.6px;font-weight:700;flex:1;">BREAKING &middot; {{ newsCity }}</div>
               <sc-if value="{{ showNewsMore }}" hint-placeholder-val="{{ false }}">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;background:rgba(255,255,255,.22);border-radius:4px;padding:1px 5px;">{{ newsMoreLabel }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.65px;background:rgba(255,255,255,.22);border-radius:5px;padding:1px 6px;">{{ newsMoreLabel }}</div>
               </sc-if>
-              <button onClick="{{ onNewsClose }}" title="Dismiss" style="border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:4px;width:18px;height:18px;line-height:1;font-size:11px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
+              <button onClick="{{ onNewsClose }}" title="Dismiss" style="border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:5px;width:23px;height:23px;line-height:1;font-size:14px;cursor:pointer;flex-shrink:0;padding:0;font-family:'IBM Plex Sans',sans-serif;">&#10005;</button>
             </div>
-            <div style="padding:9px 12px 10px;font-size:13px;font-weight:600;line-height:1.4;text-wrap:pretty;">{{ newsText }}</div>
+            <div style="padding:12px 16px 13px;font-size:17px;font-weight:600;line-height:1.4;text-wrap:pretty;">{{ newsText }}</div>
           </div>
         </sc-if>
       </div>
 
       <!-- Sidebar -->
       <div data-screen-label="Control panel" style="{{ panelStyle }}">
-        <div style="{{ panelInnerStyle }}">
+        <div ref="{{ panelInnerRef }}" style="{{ panelInnerStyle }}">
         <!-- current player -->
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -304,6 +304,9 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
               <button onClick="{{ onHug }}" disabled="{{ affectionDisabled }}" title="{{ affectionWhy }}" style="{{ hugStyle }}">Hug</button>
             </sc-if>
             <button onClick="{{ onPass }}" disabled="{{ passDisabled }}" style="{{ passStyle }}">End turn</button>
+            <sc-if value="{{ showUndo }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ onUndo }}" title="Undo the last action this turn" style="border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;gap:6px;">&#8630; Undo</button>
+            </sc-if>
           </div>
         </div>
 
@@ -338,8 +341,11 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
           </div>
         </div>
 
-        <!-- log (desktop: inline, 1/5 of panel) -->
+        <!-- log (desktop: inline, resizable) -->
         <sc-if value="{{ showLogInline }}" hint-placeholder-val="{{ true }}">
+          <div onMouseDown="{{ onDividerDown }}" style="{{ dividerStyleV }}">
+            <div style="width:32px;height:3px;border-radius:2px;background:var(--border);"></div>
+          </div>
           <div style="{{ logSectionStyle }}">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-mute);padding:10px 16px 6px;">SITUATION LOG</div>
             <div style="display:flex;gap:6px;padding:0 16px 8px;flex-wrap:wrap;">
@@ -392,7 +398,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
 
     <!-- ===== overlays ===== -->
     <sc-if value="{{ showMove }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancel }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:120;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancel }}">
         <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:380px;max-width:92vw;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
           <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Travel to {{ moveDestName }}</div>
           <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ moveCostText }}</div>
@@ -407,7 +413,7 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
     </sc-if>
 
     <sc-if value="{{ showPicker }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancelSoft }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:120;display:flex;align-items:center;justify-content:center;" onClick="{{ onCancelSoft }}">
         <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:430px;max-width:92vw;max-height:80vh;overflow:auto;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
           <div style="font-size:16px;font-weight:700;margin-bottom:4px;">{{ pickerTitle }}</div>
           <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ pickerSub }}</div>
@@ -432,8 +438,32 @@ a{color:#0E9F8A;} a:hover{color:#0B7F6E;}
       </div>
     </sc-if>
 
+    <!-- ===== forced-discard overlay (own layer, BELOW event modals so a played event floats on top) ===== -->
+    <sc-if value="{{ showDiscard }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:108;display:flex;align-items:center;justify-content:center;" onClick="{{ stop }}">
+        <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:430px;max-width:92vw;max-height:80vh;overflow:auto;animation:fadeUp .25s ease-out;" onClick="{{ stop }}">
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">{{ discardTitle }}</div>
+          <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px;">{{ discardSub }}</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <sc-for list="{{ discardItems }}" as="pi" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <button onClick="{{ pi.onClick }}" style="flex:1;display:flex;align-items:center;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="border-color:#0E9F8A;background:#F0FAF8;">
+                  <div style="width:9px;height:9px;border-radius:2px;background:{{ pi.hex }};flex-shrink:0;"></div>
+                  <span style="flex:1;">{{ pi.label }}</span>
+                  <span style="font-size:11px;color:var(--text-mute);font-weight:400;">{{ pi.sub }}</span>
+                </button>
+                <sc-if value="{{ pi.onPlay }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ pi.onPlay }}" title="Play this event instead of discarding it" style="flex-shrink:0;border:1px solid #0E9F8A;color:#0E9F8A;background:none;border-radius:6px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;" style-hover="background:#F0FAF8;">Use</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ showModel }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:100;display:flex;align-items:center;justify-content:center;">
+      <div style="position:fixed;inset:0;background:rgba(20,24,29,.45);z-index:120;display:flex;align-items:center;justify-content:center;">
         <div style="background:var(--panel);border-radius:10px;padding:22px 24px;width:420px;max-width:92vw;animation:fadeUp .25s ease-out;">
           <div style="display:flex;align-items:flex-start;gap:10px;">
             <div style="flex:1;">
@@ -715,7 +745,7 @@ class Component extends DCLogic {
     this._polys = polys;
     this._bgRect = am5.Rectangle.new(root, { fill: am5.color(0xDDE6EB), fillOpacity: 1 });
     chart.chartContainer.set('background', this._bgRect);
-    // NOTE: no am5map.ZoomControl â€” its canvas buttons get shadowed by the HTML
+    // NOTE: no am5map.ZoomControl \u2014 its canvas buttons get shadowed by the HTML
     // overlay's hit-testing. We drive zoom from HTML buttons + a wheel handler instead.
     const onView = () => {
       this.syncOverlay();
@@ -782,6 +812,27 @@ class Component extends DCLogic {
   };
 
   overlayRef = (el) => { this._ovEl = el; };
+
+  panelInnerRef = (el) => { this._panelInnerEl = el; };
+
+  onDividerDown = (e) => {
+    e.preventDefault();
+    if (!this._panelInnerEl) return;
+    this._dragStartY = e.clientY;
+    this._dragStartPct = this.state.logHeightPct ?? 30;
+    this._dragContainerH = this._panelInnerEl.getBoundingClientRect().height;
+    this._onDividerMove = (ev) => {
+      const deltaPct = ((ev.clientY - this._dragStartY) / this._dragContainerH) * 100;
+      const pct = Math.max(12, Math.min(75, this._dragStartPct - deltaPct));
+      this.setState({ logHeightPct: pct });
+    };
+    this._onDividerUp = () => {
+      window.removeEventListener('mousemove', this._onDividerMove);
+      window.removeEventListener('mouseup', this._onDividerUp);
+    };
+    window.addEventListener('mousemove', this._onDividerMove);
+    window.addEventListener('mouseup', this._onDividerUp);
+  };
 
   // shift the pin/line overlay in lockstep with the map during pan/zoom (kills tearing).
   // Uses two reference geo points converted through the chart itself, so no assumptions
@@ -875,8 +926,13 @@ class Component extends DCLogic {
 
   mut(fn) {
     const g = this.state.g;
+    if (!this._undoStack || this._undoTurn !== g.turn) { this._undoStack = []; this._undoTurn = g.turn; }
+    if (g.phase === 'actions') this._undoStack.push(JSON.parse(JSON.stringify(g)));
+    if (this._undoStack.length > 20) this._undoStack.shift();
+    const turnBefore = g.turn;
     fn(g);
-    // a forced discard can also be satisfied by PLAYING an event card â€” once the
+    if (g.turn !== turnBefore) { this._undoStack = []; this._undoTurn = g.turn; }
+    // a forced discard can also be satisfied by PLAYING an event card \u2014 once the
     // holder is back within the hand limit, resume the turn flow like doDiscard would.
     if (g.phase === 'discard' && g.pending?.type === 'discard'
         && g.players[g.pending.player].hand.length <= this.E.HAND_LIMIT) {
@@ -890,6 +946,16 @@ class Component extends DCLogic {
     this.pumpSounds(g);
     this.setState({ g, ui });
   }
+
+  onUndo = () => {
+    if (!this._undoStack || !this._undoStack.length) return;
+    const g = this._undoStack.pop();
+    this._undoTurn = g.turn;
+    const ui = this.state.ui;
+    ui.lastCurrent = g.current; ui.actPawn = g.current;
+    clearInterval(this._tv); this._tv = null;
+    this.setState({ g, ui });
+  };
 
   scheduleInfect() {
     if (this._it) return;
@@ -998,7 +1064,7 @@ class Component extends DCLogic {
     catch (e) { return this.toast('Saved game is corrupted.'); }
     if (!payload || !payload.g) return this.toast('No saved game found.');
     this.resetSfx(); this._confetti = null;
-    this._newsId = null; this._newsTurn = undefined; this._lastPhase = payload.g.phase;
+    this._newsId = null; this._newsTurn = undefined; this._lastPhase = payload.g.phase; this._undoStack = []; this._undoTurn = payload.g.turn;
     const cur = payload.g.current || 0;
     const settings = { dark: false, pawnScale: 1, pinScale: 1, pawnStyle: 'icon', sound: true, ...(payload.settings || {}) };
     this.setState({
@@ -1042,7 +1108,7 @@ class Component extends DCLogic {
     const E = this.E;
     const s = this.state.setup;
     const g = E.newGame(s.players.map(p => ({ name: p.name.trim() || 'Official', role: p.role })), s.epidemics);
-    this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions';
+    this._newsId = null; this._newsTurn = undefined; this._lastPhase = 'actions'; this._undoStack = []; this._undoTurn = g.turn;
     this.resetSfx(); this._confetti = null;
     this.setState({ screen: 'game', g, ui: { modal: null, mode: null, toast: null, actPawn: 0, drawShown: null, lastCurrent: 0, panelOpen: true, travel: null, flight: null, newsQueue: [], ping: null, menuOpen: false, labsOpen: false, settingsOpen: false, logFilter: 'timeline', logModalOpen: false, endClosed: false } });
   };
@@ -1282,7 +1348,7 @@ class Component extends DCLogic {
       },
     });
   };
-  // Hug: A asks B to gift an action â€” B confirms, A +1 now, B âˆ’1 next turn
+  // Hug: A asks B to gift an action \u2014 B confirms, A +1 now, B \u22121 next turn
   onHug = () => {
     const E = this.E, g = this.state.g;
     const mates = E.cityCompanions(g);
@@ -1291,7 +1357,7 @@ class Component extends DCLogic {
       modal: {
         type: 'picker', title: `${m.name}, accept the hug?`,
         sub: `Gift one of your next-turn actions to ${g.players[g.current].name}? They gain +1 action now; you start your next turn with 3.`,
-        items: [{ hex: E.ROLES[m.role].hex, label: 'Yes â€” return the hug', sub: `+1 for ${g.players[g.current].name}`, onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doHug(gg, m.i)); } }],
+        items: [{ hex: E.ROLES[m.role].hex, label: 'Yes \u2014 return the hug', sub: `+1 for ${g.players[g.current].name}`, onClick: () => { this.setUi({ modal: null }); this.mut(gg => E.doHug(gg, m.i)); } }],
       },
     });
     if (mates.length === 1) return confirm(mates[0]);
@@ -1317,6 +1383,7 @@ class Component extends DCLogic {
       onRestart: this.onRestart,
       onReveal: this.onReveal, onDrawContinue: this.onDrawContinue, onIntensify: this.onIntensify,
       onBuild: this.onBuild, onCureClick: this.onCureClick, onShareClick: this.onShareClick, onPass: this.onPass,
+      onUndo: this.onUndo,
       onModelConfirm: () => {},
       onCancelTarget: () => this.setUi({ mode: null }),
       onZoomIn: () => this.zoomButton(1.6),
@@ -1327,7 +1394,7 @@ class Component extends DCLogic {
     // lock button + password modal (setup screen + global)
     v.onLockToggle = this.onLockToggle;
     v.lockGlyph = this.state.unlocked ? '\uD83D\uDD13' : '\uD83D\uDD12';
-    v.lockTitle = this.state.unlocked ? 'Special rules active â€” click to disable' : 'Unlock special rules';
+    v.lockTitle = this.state.unlocked ? 'Special rules active \u2014 click to disable' : 'Unlock special rules';
     v.lockBtnStyle = `position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:10px;border:1px solid ${this.state.unlocked ? '#0E9F8A' : 'var(--border)'};background:${this.state.unlocked ? '#F0FAF8' : 'var(--surface2)'};cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;`;
     v.showLockModal = this.state.lock.open;
     v.lockInput = this.state.lock.input;
@@ -1370,7 +1437,7 @@ class Component extends DCLogic {
 
     v.strains = E.COLORS.map(c => {
       const s = E.STRAINS[c];
-      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE âœ“' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
+      const status = g.eradicated[c] ? 'ERADICATED' : g.cured[c] ? 'VACCINE \u2713' : `${E.CUBE_SUPPLY - g.supply[c]} active`;
       return {
         name: s.name, status,
         statusColor: g.cured[c] ? '#0E9F8A' : 'var(--text-mute)',
@@ -1426,7 +1493,7 @@ class Component extends DCLogic {
       style: `width:20px;height:20px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;${i === g.ratePos ? 'background:#14181D;color:#fff;' : 'background:var(--surface2);color:var(--text-mute);'}`,
     }));
 
-    // board â€” project cities through the amCharts map
+    // board \u2014 project cities through the amCharts map
     v.mapRef = this.mapRef;
     v.overlayRef = this.overlayRef;
     const mobile = (this.state.vw ?? window.innerWidth) < 760;
@@ -1459,9 +1526,13 @@ class Component extends DCLogic {
       const tw = isTouch ? 44 : 22, th = isTouch ? 128 : 64, tf = isTouch ? 22 : 11;
       v.toggleStyle = `position:absolute;top:50%;right:${open ? 390 : 0}px;transform:translateY(-50%);z-index:60;width:${tw}px;height:${th}px;border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;background:var(--panel);cursor:pointer;transition:right .28s ease;color:var(--text-sub);font-size:${tf}px;box-shadow:-2px 0 8px rgba(20,24,29,.08);padding:0;font-family:'IBM Plex Sans',sans-serif;`;
       v.panelChevron = open ? '\u25B8' : '\u25C2';
-      // desktop: hand grows, situation log fixed at ~1/5 of the panel
+      // desktop: hand grows, situation log resizable via draggable divider (default ~30% of panel)
+      const logPct = this.state.logHeightPct ?? 30;
       v.handSectionStyle = "padding:12px 16px;border-bottom:1px solid var(--border);flex:1;min-height:0;overflow:auto;";
-      v.logSectionStyle = "flex:0 0 20%;min-height:0;display:flex;flex-direction:column;border-top:1px solid var(--border);";
+      v.logSectionStyle = `flex:0 0 ${logPct}%;min-height:60px;display:flex;flex-direction:column;`;
+      v.dividerStyleV = "flex-shrink:0;height:9px;cursor:row-resize;display:flex;align-items:center;justify-content:center;background:var(--border);touch-action:none;";
+      v.panelInnerRef = this.panelInnerRef;
+      v.onDividerDown = this.onDividerDown;
       v.showLogInline = true;
       v.showLogButton = false;
     }
@@ -1480,7 +1551,7 @@ class Component extends DCLogic {
       for (const [a, b] of E.EDGES) {
         const ca = E.CITIES[a], cb = E.CITIES[b];
         if (Math.abs(ca.lon - cb.lon) > 180) {
-          // crosses the antimeridian â€” split at Â±180 with interpolated latitude
+          // crosses the antimeridian \u2014 split at \u00b1180 with interpolated latitude
           const [w, e2] = ca.lon < cb.lon ? [ca, cb] : [cb, ca];
           const span = (w.lon + 360) - e2.lon;
           const latAt180 = e2.lat + (w.lat - e2.lat) * ((180 - e2.lon) / span);
@@ -1567,7 +1638,7 @@ class Component extends DCLogic {
       style: `width:12px;height:12px;border-radius:50%;${i < g.actionsLeft ? 'background:#0E9F8A;' : 'background:var(--border);'}`,
     }));
     v.showPawnSel = cur.role === 'logistics' && g.phase === 'actions';
-    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} Â· ${p.name}` }));
+    v.pawnOptions = g.players.map(p => ({ value: p.i, label: `${p.i + 1} \u00b7 ${p.name}` }));
     v.actPawnValue = ui.actPawn;
 
     // action buttons
@@ -1585,8 +1656,9 @@ class Component extends DCLogic {
     const sOpts = acting ? E.shareOptions(g) : [];
     v.shareDisabled = !sOpts.length; v.shareWhy = sOpts.length ? '' : 'Requires another official in your city with a matching file'; v.shareStyle = btn(sOpts.length > 0);
     v.passDisabled = !acting; v.passStyle = btn(acting, 'var(--text-mute)');
+    v.showUndo = !!(this._undoStack && this._undoStack.length > 0 && g.phase === 'actions');
 
-    // special rules â€” Kiss / Hug (only when unlocked)
+    // special rules \u2014 Kiss / Hug (only when unlocked)
     v.showSpecial = this.state.unlocked;
     if (this.state.unlocked) {
       const mates = acting ? E.cityCompanions(g) : [];
@@ -1629,7 +1701,7 @@ class Component extends DCLogic {
       style: `border:1px solid ${logFilter === k ? '#0E9F8A' : 'var(--border)'};background:${logFilter === k ? '#0E9F8A' : 'var(--surface2)'};color:${logFilter === k ? '#fff' : 'var(--text-sub)'};border-radius:20px;padding:3px 11px;font-size:10px;font-weight:600;letter-spacing:.4px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;`,
     }));
     let logSrc = g.log.slice(0, 160);
-    if (logFilter !== 'timeline') logSrc = logSrc.filter(e => catOf(e.kind) === logFilter);
+    if (logFilter !== 'timeline') logSrc = logSrc.filter(e => catOf(e.kind) === logFilter && e.turn >= g.turn - 1);
     v.logEntries = logSrc.slice(0, 120).map(e => {
       const who = g.players.find(p => p.name && e.text.includes(p.name));
       const hex = who ? E.ROLES[who.role].hex : null;
@@ -1647,7 +1719,7 @@ class Component extends DCLogic {
       v.infectCards = g.pending.revealed.map(c => ({ name: E.CITIES[c.city].name, hex: E.STRAINS[c.color].hex }));
     }
     v.showTarget = targeting;
-    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding \u2014 click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet \u2014 click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol â€” click a city to clear & shield it' : '';
+    v.targetText = ui.mode?.type === 'funding' ? 'Emergency Funding \u2014 click a city to build a lab' : ui.mode?.type === 'jet' ? `Charter Jet \u2014 click a destination for ${g.players[ui.mode.pawn ?? 0]?.name}` : ui.mode?.type === 'masking' ? 'Successful Masking Protocol \u2014 click a city to clear & shield it' : '';
     v.showToast = !!ui.toast; v.toastText = ui.toast || '';
     const queue = ui.newsQueue || [];
     v.showNews = queue.length > 0;
@@ -1678,13 +1750,16 @@ class Component extends DCLogic {
       v.pickerTitle = modal.title; v.pickerSub = modal.sub;
       v.pickerItems = modal.items; v.pickerCancellable = true;
     }
-    // discard modal reuses picker (hidden while an event it triggers is targeting/choosing)
-    if (g.phase === 'discard' && g.pending?.type === 'discard' && !ui.mode && !modal) {
+    // forced-discard overlay: its own layer (z108). Stays visible when a played event opens a
+    // modal (z120 floats on top, so it can be used first). Only hidden while an event is targeting
+    // on the MAP (funding/masking/jet), which needs the board reachable.
+    v.showDiscard = false;
+    if (g.phase === 'discard' && g.pending?.type === 'discard' && !ui.mode) {
       const dp = g.players[g.pending.player];
-      v.showPicker = true; v.pickerCancellable = false;
-      v.pickerTitle = `${dp.name} is over the hand limit`;
-      v.pickerSub = `Hand limit is 7 â€” discard a card, or play an event instead. (${dp.hand.length}/7)`;
-      v.pickerItems = dp.hand.map(c => {
+      v.showDiscard = true;
+      v.discardTitle = `${dp.name} is over the hand limit`;
+      v.discardSub = `Hand limit is 7 \u2014 discard a card, or play an event instead. (${dp.hand.length}/7)`;
+      v.discardItems = dp.hand.map(c => {
         const item = {
           hex: c.type === 'event' ? '#0E9F8A' : E.STRAINS[c.color].hex,
           label: c.type === 'event' ? E.EVENTS[c.event].name : E.CITIES[c.city].name,
@@ -1795,4 +1870,3 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
-
